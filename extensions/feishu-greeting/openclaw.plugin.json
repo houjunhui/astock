@@ -1,0 +1,28 @@
+{
+  "id": "feishu-greeting",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "message": {
+        "type": "string",
+        "description": "Opening message text to send"
+      },
+      "channel": {
+        "type": "string",
+        "default": "feishu",
+        "description": "Channel to send through (default: feishu)"
+      },
+      "accountId": {
+        "type": "string",
+        "description": "Feishu account ID (optional, uses default)"
+      },
+      "targets": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Feishu user open_ids to send the greeting to (e.g. [\"ou_xxx\", \"ou_yyy\"])"
+      }
+    },
+    "required": ["message", "targets"]
+  }
+}

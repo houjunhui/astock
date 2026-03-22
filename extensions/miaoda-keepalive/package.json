@@ -1,0 +1,11 @@
+{
+  "name": "miaoda-keepalive",
+  "version": "0.1.1",
+  "description": "妙搭 OpenClaw 保活插件",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.mjs"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "miaoda-openclaw",
+  "version": "1.5.4",
+  "private": true,
+  "scripts": {
+    "start": "openclaw gateway run",
+    "onboard": "openclaw onboard --non-interactive --accept-risk",
+    "lint": "echo 0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

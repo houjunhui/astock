@@ -1,0 +1,14 @@
+{
+  "id": "miaoda-keepalive",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "debug": {
+        "type": "boolean",
+        "default": false,
+        "description": "开启后将事件写入本地 JSONL 文件，用于调试"
+      }
+    }
+  }
+}

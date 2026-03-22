@@ -1,0 +1,12 @@
+{
+  "name": "@openclaw/feishu-greeting",
+  "version": "0.1.0",
+  "description": "Auto-send opening messages to Feishu allowlisted users on gateway startup",
+  "type": "module",
+  "peerDependencies": {
+    "openclaw": "*"
+  },
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  }
+}

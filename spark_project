@@ -1,0 +1,9 @@
+run = ["npm", "run", "dev"] # 默认 spark-cli dev
+hidden = [".config", ".git", "scripts", "node_modules", "dist", ".spark", ".agent", ".agents", "tmp", ".spark_project", ".playwright-cli"]
+lint = ["npm", "run", "lint"]
+
+[files]
+[files.restrict]
+pathPatterns = [".spark_project"]
+[files.hidden]
+pathPatterns = [".config", ".git", "scripts", "node_modules", "dist", ".spark", ".agent", ".agents", "tmp", ".spark_project", ".playwright-cli"]

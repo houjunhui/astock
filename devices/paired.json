@@ -1,0 +1,78 @@
+{
+  "b3fe79047e9540c89cc96ea640cc8b89fbe2877d42c7535ba8d7e01a9a6f4766": {
+    "deviceId": "b3fe79047e9540c89cc96ea640cc8b89fbe2877d42c7535ba8d7e01a9a6f4766",
+    "publicKey": "y3etbwNvbzDSxKJZmWHEZiMr1-T7AfT-cH1WmsOpr5s",
+    "platform": "linux",
+    "clientId": "cli",
+    "clientMode": "probe",
+    "role": "operator",
+    "roles": [
+      "operator"
+    ],
+    "scopes": [
+      "operator.admin",
+      "operator.read",
+      "operator.write",
+      "operator.approvals",
+      "operator.pairing"
+    ],
+    "approvedScopes": [
+      "operator.admin"
+    ],
+    "tokens": {
+      "operator": {
+        "token": "UKT4NgjR2BNTNIFe2ge4WzCQkMiwIaAyFAC6pCSEBPc",
+        "role": "operator",
+        "scopes": [
+          "operator.admin"
+        ],
+        "createdAtMs": 1772952337544,
+        "lastUsedAtMs": 1772956907231
+      }
+    },
+    "createdAtMs": 1772952337544,
+    "approvedAtMs": 1772952337544
+  },
+  "6e8a58bfc914de1b42378bd030fbb93edbd01ea93fb88fdd48c7e1065123d426": {
+    "deviceId": "6e8a58bfc914de1b42378bd030fbb93edbd01ea93fb88fdd48c7e1065123d426",
+    "publicKey": "t2jIzwwIwaUO-ROoQ3qgXfBv5I_6JHPkLLBCC7IN4X0",
+    "platform": "linux",
+    "clientId": "gateway-client",
+    "clientMode": "backend",
+    "role": "operator",
+    "roles": [
+      "operator"
+    ],
+    "scopes": [
+      "operator.admin",
+      "operator.read",
+      "operator.write",
+      "operator.approvals",
+      "operator.pairing"
+    ],
+    "approvedScopes": [
+      "operator.admin",
+      "operator.read",
+      "operator.write",
+      "operator.approvals",
+      "operator.pairing"
+    ],
+    "tokens": {
+      "operator": {
+        "token": "Pu8j19PVq9wYxpW-n-Y9ESLfaesHzNmFYVGeJVt_bMw",
+        "role": "operator",
+        "scopes": [
+          "operator.admin",
+          "operator.approvals",
+          "operator.pairing",
+          "operator.read",
+          "operator.write"
+        ],
+        "createdAtMs": 1772965495329
+      }
+    },
+    "createdAtMs": 1772965495329,
+    "approvedAtMs": 1772965495329,
+    "displayName": "agent"
+  }
+}
