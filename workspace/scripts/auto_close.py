@@ -106,3 +106,13 @@ if __name__ == "__main__":
     closed, positions = auto_close(date_arg)
     report = format_report(closed, positions, date_arg)
     print(report)
+
+    # 生成每日复盘报告
+    try:
+        from astock.trade_logger import generate_daily_review, format_execution_trace
+        date_str = date_arg.replace("-", "")
+        review = generate_daily_review(date_str)
+        print()
+        print(format_execution_trace(date_str))
+    except Exception as e:
+        pass
