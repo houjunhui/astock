@@ -169,7 +169,8 @@ def auction_ok(code, name, lb, jb_prob, vr=None, sector_hot=False, phase="退潮
 
 def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
                  zt_yesterday=False, phase="退潮", dz_risks=None,
-                 ml_prob=None, limit_up_suc_rate=None, turnover=None):
+                 ml_prob=None, limit_up_suc_rate=None, turnover=None,
+                 params=None):
     """
     竞价标的评级 S/A/B/C，直接绑定仓位。
 
@@ -294,18 +295,27 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
     warn_count = sum(1 for v in details.values() if v == "warn")
     susp_count = sum(1 for v in details.values() if v == "susp")
 
-    # ── S级严格条件：3板+，竞价0-3%，封板率≥85%，换手≥2%，量比≥5，warn=0，susp≤1 ──
+    # ── S级严格条件 ──
+    _p = params if params else {}
+    min_boards = _p.get("s_level_min_boards", 4)
+    min_seal = _p.get("s_level_min_seal_rate", 0.85)
+    min_turnover = _p.get("s_level_min_turnover", 2.0)
+    min_vr = _p.get("s_level_min_vr", 5.0)
+    auction_max = _p.get("auction_chg_max", 0.05)
+    # 竞价涨跌幅上限转百分比
+    auction_max_pct = auction_max * 100
+
     is_strict_s = (
-        lb >= 3
+        lb >= min_boards
         and auction_chng is not None
-        and 0 <= auction_chng <= 3
+        and 0 <= auction_chng <= auction_max_pct
         and limit_up_suc_rate is not None
-        and limit_up_suc_rate >= 0.85
+        and limit_up_suc_rate >= min_seal
         and not any("RSI" in r or "超买" in r for r in dz_risks)
         and turnover is not None
-        and turnover >= 2.0
+        and turnover >= min_turnover
         and vr is not None
-        and vr >= 5.0
+        and vr >= min_vr
         and warn_count == 0
         and susp_count <= 1
     )

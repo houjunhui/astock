@@ -246,7 +246,7 @@ def auto_buy(date_str):
             vr=vr, auction_chng=chg, phase=phase,
             zt_yesterday=zt, dz_risks=None,
             limit_up_suc_rate=yd.get("limit_up_suc_rate"),
-            turnover=turnover
+            turnover=turnover, params=params
         )
 
         candidates.append({
