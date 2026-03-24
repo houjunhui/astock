@@ -84,7 +84,7 @@ def add_position(code, name, buy_price, qty, capital_pct, stop_loss, target_pric
     - success=True, is_new=True  → 新增成功
     - success=False, is_new=False → 同一股票当日已存在，跳过
     """
-    today = date.today().strftime("%Y-%m-%d")
+    today = date.today().strftime("%Y%m%d")
     try:
         with get_db(write=True) as conn:
             conn.execute("""
@@ -107,7 +107,7 @@ def reduce_position(code, reduce_qty, close_price, reason=""):
     reduce_qty: 本次卖出的数量
     返回: True=成功降仓, False=无持仓
     """
-    today_s = date.today().strftime("%Y-%m-%d")
+    today_s = date.today().strftime("%Y%m%d")
     with get_db(write=True) as conn:
         row = conn.execute(
             "SELECT * FROM positions WHERE code=? AND status='持仓' ORDER BY id DESC LIMIT 1",
@@ -155,7 +155,7 @@ def close_position(code, close_price, reason=""):
     平仓（仅对持仓中标的执行，幂等）
     返回: True=成功平仓, False=无持仓或已平
     """
-    today = date.today().strftime("%Y-%m-%d")
+    today = date.today().strftime("%Y%m%d")
     with get_db(write=True) as conn:
         # 原子操作：先查后改，用事务保证一致性
         row = conn.execute(
@@ -197,7 +197,7 @@ def load_portfolio(status_filter=('持仓',)):
 
 def get_today_trades():
     """获取今日所有交易（含已平仓）"""
-    today = date.today().strftime("%Y-%m-%d")
+    today = date.today().strftime("%Y%m%d")
     with get_db() as conn:
         rows = conn.execute(
             "SELECT * FROM positions WHERE buy_date=? ORDER BY id DESC",
@@ -213,18 +213,27 @@ def load_all_trades():
         ).fetchall()
     return [dict(r) for r in rows]
 
+def _norm(date_str):
+    """统一日期格式为YYYYMMDD"""
+    if not date_str:
+        return None
+    s = str(date_str).replace("-", "")
+    return s if len(s) == 8 else None
+
 def get_daily_pnl(start_date=None, end_date=None):
-    """加载每日盈亏"""
+    """加载每日盈亏（支持YYYYMMDD或YYYY-MM-DD格式）"""
+    sd = _norm(start_date)
+    ed = _norm(end_date)
     with get_db() as conn:
-        if start_date and end_date:
+        if sd and ed:
             rows = conn.execute(
                 "SELECT * FROM daily_pnl WHERE date>=? AND date<=? ORDER BY date DESC",
-                (start_date, end_date)
+                (sd, ed)
             ).fetchall()
-        elif start_date:
+        elif sd:
             rows = conn.execute(
                 "SELECT * FROM daily_pnl WHERE date>=? ORDER BY date DESC",
-                (start_date,)
+                (sd,)
             ).fetchall()
         else:
             rows = conn.execute("SELECT * FROM daily_pnl ORDER BY date DESC").fetchall()
