@@ -119,14 +119,79 @@ for b in ladder["boards"]:
 print()
 
 # ═══════════════════════════════════════════════════════════
+# STEP 2b: 过滤昨日涨停池（核心修复！）
+# 只有"昨日涨停→今日竞价"才是有效竞价选股逻辑
+# 昨日没涨停→今日涨停的股票，不适用竞价延续策略
+# ═══════════════════════════════════════════════════════════
+print("=" * 95)
+print("【昨日涨停池过滤】")
+
+# 获取昨日涨停池
+import datetime as _dt
+try:
+    _yesterday = (TODAY_RAW[:4]+"-"+TODAY_RAW[4:6]+"-"+TODAY_RAW[6:8])
+    _yd = _dt.date(int(_yesterday[:4]), int(_yesterday[5:7]), int(_yesterday[8:10]))
+    _yd -= _dt.timedelta(days=1)
+    # 跳过周末
+    while _yd.weekday() >= 5:
+        _yd -= _dt.timedelta(days=1)
+    _yday_str = _yd.strftime("%Y%m%d")
+except Exception:
+    _yday_str = str(int(TODAY_RAW) - 1)
+
+ladder_yday = get_ladder(_yday_str)
+yday_codes = set()
+yday_lookup = {}  # code → {level, limit_up_type, limit_up_suc_rate, ...}
+if ladder_yday:
+    for b in ladder_yday["boards"]:
+        lv = b.get("level", 1)
+        for s in b.get("stocks", []):
+            code = s.get("code", "")
+            yday_codes.add(code)
+            yday_lookup[code] = {
+                "level": lv,
+                "limit_up_type": s.get("limit_up_type", ""),
+                "limit_up_suc_rate": s.get("limit_up_suc_rate"),
+            }
+
+# 分类：CONTINUATION = 昨日涨停今日延续；NEW_1板 = 今日新晋涨停
+cont_stocks = []   # 有效竞价选股候选（延续板+昨日涨停的1板）
+new_1b_stocks = [] # 今日新晋涨停（昨日未涨停，不适用竞价延续逻辑）
+for s in zt_all:
+    is_cont = (s["level"] >= 2) or (s["code"] in yday_codes)
+    s["is_continuation"] = is_cont
+    if is_cont:
+        cont_stocks.append(s)
+    else:
+        new_1b_stocks.append(s)
+
+print(f"  昨日涨停池: {len(yday_codes)}只")
+print(f"  有效候选（昨日涨停延续）: {len(cont_stocks)}只")
+print(f"  排除（今日新晋涨停）: {len(new_1b_stocks)}只")
+if new_1b_stocks:
+    excluded_names = [f"{s['code']}{s['name']}" for s in new_1b_stocks[:10]]
+    print(f"  排除标的: {', '.join(excluded_names)}{'...' if len(new_1b_stocks)>10 else ''}")
+    print(f"  → 原因：这些股票昨日未涨停，今日竞价信号不代表\"延续晋级\"，不适用竞价选股策略")
+print()
+
+# 用过滤后的候选池继续（覆盖 zt_all_filtered）
+zt_all_filtered = cont_stocks
+
+# ═══════════════════════════════════════════════════════════
 # STEP 3: 板块热度（板块联动信号）
 # ═══════════════════════════════════════════════════════════
 print("=" * 95)
 print("【板块热度】")
 
+# 统计各板块涨停数量（用过滤后候选池）
+sector_count = defaultdict(int)
+for s in zt_all_filtered:
+    if s.get("industry"):
+        sector_count[s["industry"]] += 1
+
 # 统计各板块涨停数量
 sector_count = defaultdict(int)
-for s in zt_all:
+for s in zt_all_filtered:
     if s.get("industry"):
         sector_count[s["industry"]] += 1
 
@@ -138,10 +203,10 @@ if sector_count:
     print(f"  热门板块: {dict(sorted_sectors[:8])}")
     for sec, cnt in hot_sectors.items():
         print(f"  🔥 {sec}: {cnt}只涨停")
-    for s in zt_all:
+    for s in zt_all_filtered:
         s["sector_hot"] = sector_count.get(s["industry"], 0) >= 2
 else:
-    for s in zt_all:
+    for s in zt_all_filtered:
         s["sector_hot"] = False
 print()
 
@@ -150,7 +215,7 @@ print()
 # ═══════════════════════════════════════════════════════════
 print("=" * 95)
 print("【竞价数据拉取】")
-all_codes = [s["code"] for s in zt_all]
+all_codes = [s["code"] for s in zt_all_filtered]
 auction_data = get_auction_for_codes(all_codes, delay=0.3)
 print(f"  获取: {len(auction_data)}/{len(all_codes)} 只")
 print()
@@ -165,13 +230,19 @@ print(f"  {'-'*90}")
 
 stock_results = []
 
-for s in zt_all:
+for s in zt_all_filtered:
     code = s["code"]
-    lb   = s["level"]
+    yd   = yday_lookup.get(code, {})
+    lb   = yd.get("level", s["level"])          # 昨日板位（9:25时已确认）
     ad   = auction_data.get(code, {})
     auction_chng = ad.get("changeRate", 0)
     vr_auction   = ad.get("volumeRatio", 1.0)
-    zt_yesterday = s["limit_up_type"] == "一字板"
+    zt_yesterday = yd.get("limit_up_type", "") == "一字板"  # 昨日是否一字板
+
+    # ── 统一用昨日ladder数据（9:25时已知），不用今日实时数据 ──
+    s["level"]            = lb
+    s["limit_up_type"]    = yd.get("limit_up_type", s["limit_up_type"])
+    s["limit_up_suc_rate"] = yd.get("limit_up_suc_rate", s["limit_up_suc_rate"])
 
     # ── K线数据 ──
     dates, opens, highs, lows, closes, vols = get_kline_ohlcv(code, days=60)
@@ -233,7 +304,7 @@ for s in zt_all:
         dz_risks     = pred.get("dz_risks", [])
         raw_dz_pct   = pred.get("raw_dz_pct", 0)
     except Exception as e:
-        calibrated_jb = (s.get("limit_up_suc_rate") or 0.5) * 100  # 转百分比
+        calibrated_jb = (yd.get("limit_up_suc_rate") or 0.5) * 100  # 转百分比
         ml_prob = None
         dz_risks = []
         raw_jb_pct = calibrated_jb
@@ -252,7 +323,7 @@ for s in zt_all:
         all_risks = dz_risks
 
     # ── 校准后jb_prob用于评级（D4替代）── calibrated_jb_prob 已是百分比形式（40.8=40.8%）────
-    jb_prob_for_tier = calibrated_jb if calibrated_jb else (s.get("limit_up_suc_rate") or 0.5) * 100
+    jb_prob_for_tier = calibrated_jb if calibrated_jb else (yd.get("limit_up_suc_rate") or 0.5) * 100
 
     # ── 打印技术指标行 ──
     rsi_str = f"{rsi_val:.0f}" if rsi_val else "N/A"

@@ -191,14 +191,21 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
     veto_reasons = []
     warnings = []
 
-    # ---- D1: 一字板形态直接降级/否决 ----
+    # ---- D1: 一字板形态（联合封板率判断）----
+    # 一字板高开是否危险，看封板率：封板率高=市场认可，封板率低=抛压大致命
     if zt_yesterday and auction_chng is not None and auction_chng > 5:
-        if auction_chng > 9:
+        # 封板率<70%：市场不认可，高开是主力诱多 → warn
+        # 封板率70-85%：有一定认可 → susp（严格控仓）
+        # 封板率≥85%：强势封板，高开合理 → ok
+        suc_rate = limit_up_suc_rate if limit_up_suc_rate is not None else 0.5
+        if suc_rate < 0.70:
             details["D1_一字板"] = "warn"
-            veto_reasons.append(f"一字板高开{auction_chng:.0f}%→断板率>60%")
-        else:
+            veto_reasons.append(f"一字板高开{auction_chng:.0f}%→封板率{suc_rate:.0%}<70%→抛压大致命")
+        elif suc_rate < 0.85:
             details["D1_一字板"] = "susp"
-            warnings.append("一字板形态：严格控仓")
+            warnings.append(f"一字板高开：封板率{suc_rate:.0%}<85%，严格控仓")
+        else:
+            details["D1_一字板"] = "ok"
 
     # ---- D1: 竞价偏离（无板块均值数据，用绝对阈值）----
     if auction_chng is not None:
@@ -251,15 +258,23 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
     else:
         details["D3_断板风险"] = "ok"
 
-    # ---- D4: ML置信度 ----
+    # ---- D4: ML置信度（按板位分级）----
+    # 板位越高，ML置信度要求越高（高板位容错低）
     if ml_prob is not None:
+        if lb >= 4:
+            ml_thresh = 0.60   # 4板+：维持60%
+        elif lb >= 3:
+            ml_thresh = 0.55   # 3板：55%
+        else:
+            ml_thresh = 0.50   # 1-2板：50%（下调，避免2板误杀）
+        
         if ml_prob >= 0.80:
             details["D4_ML"] = "ok"
-        elif ml_prob >= 0.60:
+        elif ml_prob >= ml_thresh:
             details["D4_ML"] = "susp"
         else:
             details["D4_ML"] = "warn"
-            veto_reasons.append(f"ML概率{ml_prob:.0%}<60%→置信度不足")
+            veto_reasons.append(f"ML概率{ml_prob:.0%}<{ml_thresh:.0%}→置信度不足")
     else:
         details["D4_ML"] = "susp"
 
@@ -299,6 +314,13 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
     elif phase == "主升" and tier in ("S", "A"):
         position = min(position * 1.20, 1.0)  # 主升期可加20%
         tier = f"{tier}+"
+
+    # ── 退潮期高位板强制否决 ──────────────────────────────────
+    # 教训：大胜达3板+退潮期→误判；退潮期高位板晋级率极低，直接降C
+    if phase in ("退潮", "恐慌") and lb >= 3 and tier != "C":
+        tier = "C"
+        position = 0
+        veto_reasons.append(f"退潮期{lb}板→晋级率低→放弃")
 
     return {
         "tier": tier.rstrip("+-"),

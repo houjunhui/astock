@@ -22,7 +22,35 @@
 
 ## 记忆
 
-### A股超短预测系统 v3.2（2026-03-23建立）
+### A股超短预测系统 v3.3（2026-03-24更新）
+
+**数据源优先级**：
+1. K线：quicktiny HTTP API（`astock/quicktiny_kline.py`）> BaoStock
+2. 涨停池/连板数/行业/原因：quicktiny ladder接口（`quicktiny.py`）
+3. 竞价数据：quicktiny auction接口（9:25快照冻结）
+4. 炸板/跌停池/涨跌停统计：quicktiny接口
+   - `get_limit_stats(date)`：涨停/跌停/炸板率实时统计
+   - `get_limit_down(date)`：跌停池
+   - `get_broken_limit_up(date)`：炸板池（含封成率）
+   - `get_market_overview_fixed(date)`：市场温度/涨跌家数
+
+**评级规则（v3.3更新）**：
+- veto_reasons≥1 OR warn_count≥2 → C级(0%)
+- warn_count=1 OR susp_count≥2 → B级(30%)
+- susp_count=1 → A级(50%)
+- all ok → S级(100%)
+- **退潮/恐慌期lb≥3板：强制降C**（宁可错过不做错）
+- **一字板高开：联合封板率判断**（<70% warn，70-85% susp，≥85% ok）
+
+**买入方式规则（v3.3新增）**：
+- 竞价0-3%：竞价买入（9:15-9:25）或9:30开盘买
+- 竞价3-7%：等回调至涨幅一半位置
+- 竞价>7%：等回调至75%位置，超过原涨幅+2%放弃
+- 一字板涨停：无法买入（排队等炸板回封）
+
+**今日市场数据（20260324）**：
+- 温度: 82.5 | 涨停: 47 | 跌停: 6 | 炸板: 0 | 阶段: 🚀主升
+- 昨日（0323）：涨停28 封板率65.1% 跌停71 炸板15(28.3%) | 市场温度18.9
 
 **数据源优先级**：
 1. K线：quicktiny HTTP API（`astock/quicktiny_kline.py`）> BaoStock
@@ -59,3 +87,8 @@
 **parquet磁盘争用**：8个batch文件并发读导致超时；合并为单文件`all_klines.parquet`解决
 **import顺序**：多import时后导入覆盖前导入，本项目中predict_calibrated被predict覆盖，需单独维护
 **signal类型**：predict返回list但db.py需string，formatter需字符串，修复时注意类型转换
+
+**退潮期高位板误判（20260324）**：大胜达3板+退潮期→B级30%买入→未涨停；修复：退潮/恐慌期lb≥3板强制降C
+**一字板规则过严（20260324）**：中利集团一字板高开>9%warn，但封板率58%≠断板；修复：联合封板率判断（<70% warn，70-85% susp，≥85% ok）
+**竞价买入方式（20260324）**：0-3%竞价买，3-7%等回调50%，>7%等回调75%+放弃线；一字板无法买入
+**quicktiny板块接口**：get_concept_ranking和get_sector_analysis均返回空数据，暂无全板块成分股接口

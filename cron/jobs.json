@@ -6,9 +6,9 @@
       "agentId": "main",
       "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
       "name": "A股每日竞价复盘",
-      "enabled": true,
+      "enabled": false,
       "createdAtMs": 1774178531556,
-      "updatedAtMs": 1774274473718,
+      "updatedAtMs": 1774342014666,
       "schedule": {
         "kind": "cron",
         "expr": "0 22 * * 1-5",
@@ -26,7 +26,6 @@
         "channel": "feishu"
       },
       "state": {
-        "nextRunAtMs": 1774360800000,
         "lastRunAtMs": 1774274400006,
         "lastRunStatus": "ok",
         "lastStatus": "ok",
@@ -43,9 +42,9 @@
       "name": "A股竞价模式筛选",
       "enabled": true,
       "createdAtMs": 1774209833478,
-      "updatedAtMs": 1774315549171,
+      "updatedAtMs": 1774328026728,
       "schedule": {
-        "expr": "5 25 9 * * 1-5",
+        "expr": "0 26 9 * * 1-5",
         "kind": "cron",
         "tz": "Asia/Shanghai"
       },
@@ -53,7 +52,7 @@
       "wakeMode": "now",
       "payload": {
         "kind": "agentTurn",
-        "message": "执行A股竞价模式筛选任务。\n\n语气要求：冷静、敏锐、带点预期。不废话，直接给结论。\n\n步骤：\n1. 确定今日日期（从系统获取，格式YYYYMMDD）\n2. 运行竞价筛选命令：\n```bash\ncd /home/gem/workspace/agent/workspace && bash -c 'source .env && python3 -u astock/main.py predict $(date +%Y%m%d)'\n```\n\n报告格式（飞书不支持Markdown表格，用纯文本空格对齐）：\n\n【📈 竞价模式筛选】日期：YYYYMMDD HH:MM\n\n市场情绪：[从输出读取：涨停数/炸板率/跌停数/市场温度 → 判定阶段]\n\n【📊 竞价异动】\n[重点关注竞价高开/低开幅度异常的标的，以及一字板连板]\n[格式：代码 名称 板位 竞价涨幅% 晋级% 断板%]\n\n【🔥 预期最强方向】\n[根据：1)板块联动效应强 2)晋级/断板比最优 3)竞价信号健康，给出最强1-2只]\n[格式：代码 名称 板位 晋级% 断板% 预期理由]\n\n【⚠️ 规避标的】\n[明确标注：一字板高开/竞价过热/板位过高的标的，以及断板率>60%的标的]\n\n【操作建议】\n激进型：[最强1-2只]\n稳健型：[晋级>30%且断板<40%的标的]\n\n⚠️ 风险提示：[根据板位风控说明标注高风险标的]\n\n4. 用message工具发送到飞书：user:ou_12d595ebce7c7b73e926034c562b59d0，标题「📈 竞价模式筛选 YYYYMMDD」\n\n注意：如果命令无输出或失败，仍然发送消息告知状态。",
+        "message": "执行A股竞价模式筛选任务（完整五维版）。\n\n语气：冷静、敏锐、直接。不废话，给结论。\n\n步骤：\n1. 确定今日日期（从系统获取）\n2. 运行完整竞价选股：\n```bash\ncd /home/gem/workspace/agent/workspace && python3 scripts/astock_auction_full.py\n```\n\n3. 整理输出，发送到飞书，格式：\n\n【📈 竞价模式筛选】日期：YYYYMMDD HH:MM\n市场阶段：[阶段emoji 阶段名] | 温度:X | 涨停X 跌停X 炸板X\n\n[可选：今日热门板块]\n\n【🟡 可操作标的】X只 | 总仓位≤XXX%\n优先级 代码 名称 板位 竞价 仓位 核心逻辑\n...\n\n【🔴 放弃标的】X只（分类说明）\n- 一字板高开断板群：...\n- RSI超买群：...\n- 量能不足群：...\n\n【操作建议】\n稳健首选：[名称]（平开/低开，竞价健康）\n激进关注：[名称]（竞价强，但需注意风险）\n\n4. 用message工具发送到飞书：user:ou_12d595ebce7c7b73e926034c562b59d0\n\n注意：脚本自动加载.env中的API配置，无需手动设置。",
         "timeoutSeconds": 600
       },
       "delivery": {
@@ -62,11 +61,11 @@
         "channel": "feishu"
       },
       "state": {
-        "nextRunAtMs": 1774401905000,
-        "lastRunAtMs": 1774315505005,
+        "nextRunAtMs": 1774401960000,
+        "lastRunAtMs": 1774328001598,
         "lastRunStatus": "ok",
         "lastStatus": "ok",
-        "lastDurationMs": 44166,
+        "lastDurationMs": 25130,
         "lastDelivered": true,
         "lastDeliveryStatus": "delivered",
         "consecutiveErrors": 0
@@ -115,7 +114,7 @@
       "name": "狗仔·资讯推送（12:00）",
       "enabled": true,
       "createdAtMs": 1774282855456,
-      "updatedAtMs": 1774282855456,
+      "updatedAtMs": 1774325040023,
       "schedule": {
         "expr": "0 12 * * 1-5",
         "kind": "cron",
@@ -134,7 +133,14 @@
         "to": "ou_12d595ebce7c7b73e926034c562b59d0"
       },
       "state": {
-        "nextRunAtMs": 1774324800000
+        "nextRunAtMs": 1774411200000,
+        "lastRunAtMs": 1774324800003,
+        "lastRunStatus": "error",
+        "lastStatus": "error",
+        "lastDurationMs": 240020,
+        "lastError": "cron: job execution timed out",
+        "lastDeliveryStatus": "unknown",
+        "consecutiveErrors": 1
       }
     },
     {
@@ -164,6 +170,93 @@
       },
       "state": {
         "nextRunAtMs": 1774368000000
+      }
+    },
+    {
+      "id": "08fa94eb-53ba-4c69-99c0-ef4c1e18c48a",
+      "agentId": "main",
+      "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
+      "name": "A股自动化交易-竞价买入",
+      "enabled": true,
+      "createdAtMs": 1774341977392,
+      "updatedAtMs": 1774341977392,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 26 9 * * 1-5",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "执行竞价自动买入脚本。\n\n步骤：\n1. 运行：\n```bash\ncd /home/gem/workspace/agent/workspace && python3 scripts/auto_buy.py\n```\n2. 输出会自动通过 announce 发送。如果脚本执行失败（网络、API等问题），自动重试最多2次（间隔30秒）\n3. 今日日期为：{date}\n\n注意：\n- 不要修改任何文件\n- 不要调用任何其他工具\n- 只运行上述命令并报告结果",
+        "timeoutSeconds": 300
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "feishu",
+        "to": "ou_12d595ebce7c7b73e926034c562b59d0"
+      },
+      "state": {
+        "nextRunAtMs": 1774401960000
+      }
+    },
+    {
+      "id": "e3729aaf-8e63-41e1-99eb-65de3e16555c",
+      "agentId": "main",
+      "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
+      "name": "A股自动化交易-持仓监控",
+      "enabled": true,
+      "createdAtMs": 1774341995386,
+      "updatedAtMs": 1774341995386,
+      "schedule": {
+        "kind": "cron",
+        "expr": "*/30 10-14 * * 1-5",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "执行盘中持仓监控脚本。\n\n步骤：\n1. 运行：\n```bash\ncd /home/gem/workspace/agent/workspace && python3 scripts/auto_monitor.py\n```\n2. 如果脚本执行失败（网络、API等问题），自动重试最多2次（间隔30秒）\n3. 只有当监控脚本输出包含「自动平仓」或「预警」时才发送飞书通知；\n   如果只是「无持仓，无预警」，不发送任何消息（静默）\n\n注意：\n- 不要修改任何文件\n- 不要调用除上述以外的其他工具\n- 静默执行，有事才说",
+        "timeoutSeconds": 120
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "feishu",
+        "to": "ou_12d595ebce7c7b73e926034c562b59d0"
+      },
+      "state": {
+        "nextRunAtMs": 1774404000000
+      }
+    },
+    {
+      "id": "ac847520-c95e-4213-bf9e-a7f864fa95a3",
+      "agentId": "main",
+      "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
+      "name": "A股自动化交易-收盘平仓",
+      "enabled": true,
+      "createdAtMs": 1774342003833,
+      "updatedAtMs": 1774342003833,
+      "schedule": {
+        "kind": "cron",
+        "expr": "5 15 * * 1-5",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "执行收盘自动平仓脚本。\n\n步骤：\n1. 运行：\n```bash\ncd /home/gem/workspace/agent/workspace && python3 scripts/auto_close.py\n```\n2. 如果脚本执行失败（网络、API等问题），自动重试最多2次（间隔30秒）\n3. 输出会自动通过 announce 发送\n\n注意：\n- 不要修改任何文件\n- 不要调用任何其他工具\n- 只运行上述命令并报告结果",
+        "timeoutSeconds": 120
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "feishu",
+        "to": "ou_12d595ebce7c7b73e926034c562b59d0"
+      },
+      "state": {
+        "nextRunAtMs": 1774422300000
       }
     }
   ]
