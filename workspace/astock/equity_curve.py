@@ -278,8 +278,15 @@ def record_trade_result(is_profit, pnl_pct, date_str):
         save_loss_state(state)
         return "normal", "盈利，连亏计数归零"
     
-    # 亏损
-    state["consecutive_losses"] += 1
+    # 亏损（按幅度差异化计数）
+    loss_pct = abs(pnl_pct)  # pnl_pct is already a percentage, e.g. -4.5
+    if loss_pct <= 0.01:
+        inc = 1
+    elif loss_pct <= 0.03:
+        inc = 2
+    else:
+        inc = 3
+    state["consecutive_losses"] += inc
     state["total_losses"] += 1
     state["last_loss_date"] = date_str
     
