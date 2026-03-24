@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 import json
 from collections import defaultdict
 from astock.cache_manager import apply_cache  # 历史数据缓存
-from astock.quicktiny import get_ladder, get_auction_for_codes, get_kline_hist
+# quicktiny imports moved inside functions (after apply_cache) to ensure caching works
 from concurrent.futures import ThreadPoolExecutor
 import signal
 
@@ -74,6 +74,8 @@ def get_low_price(code, date_str):
 
 
 def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
+    # 延迟导入quicktiny，确保apply_cache()的缓存包装先生效
+    from astock.quicktiny import get_ladder, get_auction_for_codes, get_kline_hist
     """
     模拟单日交易
     

@@ -24,7 +24,7 @@ from datetime import datetime
 warnings.filterwarnings('ignore')
 
 # ===================== 环境变量 =====================
-os.environ['LB_API_KEY'] = 'lb_c5d7beae8177a7700509ef04f48bff5909699e742c0a71f835554ad19b706bfd'
+os.environ['LB_API_KEY'] = 'YOUR_QUICKTINY_KEY_HERE'
 os.environ['LB_API_BASE'] = 'https://stock.quicktiny.cn/api/openclaw'
 
 # ===================== 配置 =====================
