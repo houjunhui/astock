@@ -16,8 +16,8 @@ export declare const UATConfigSchema: z.ZodOptional<z.ZodObject<{
 }, z.core.$strip>>;
 export declare const FeishuGroupSchema: z.ZodObject<{
     groupPolicy: z.ZodOptional<z.ZodEnum<{
-        allowlist: "allowlist";
         open: "open";
+        allowlist: "allowlist";
         disabled: "disabled";
     }>>;
     requireMention: z.ZodOptional<z.ZodBoolean>;
@@ -45,23 +45,23 @@ export declare const FeishuAccountConfigSchema: z.ZodObject<{
     webhookPath: z.ZodOptional<z.ZodString>;
     webhookPort: z.ZodOptional<z.ZodNumber>;
     dmPolicy: z.ZodOptional<z.ZodEnum<{
-        allowlist: "allowlist";
         open: "open";
         pairing: "pairing";
+        allowlist: "allowlist";
         disabled: "disabled";
     }>>;
     allowFrom: z.ZodPipe<z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>]>>, z.ZodTransform<string[] | undefined, string | string[] | undefined>>;
     groupPolicy: z.ZodOptional<z.ZodEnum<{
-        allowlist: "allowlist";
         open: "open";
+        allowlist: "allowlist";
         disabled: "disabled";
     }>>;
     groupAllowFrom: z.ZodPipe<z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>]>>, z.ZodTransform<string[] | undefined, string | string[] | undefined>>;
     requireMention: z.ZodOptional<z.ZodBoolean>;
     groups: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         groupPolicy: z.ZodOptional<z.ZodEnum<{
-            allowlist: "allowlist";
             open: "open";
+            allowlist: "allowlist";
             disabled: "disabled";
         }>>;
         requireMention: z.ZodOptional<z.ZodBoolean>;
@@ -104,24 +104,24 @@ export declare const FeishuAccountConfigSchema: z.ZodObject<{
         accountId: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>>;
     replyMode: z.ZodOptional<z.ZodUnion<readonly [z.ZodEnum<{
-        streaming: "streaming";
         auto: "auto";
         static: "static";
+        streaming: "streaming";
     }>, z.ZodObject<{
         default: z.ZodOptional<z.ZodEnum<{
-            streaming: "streaming";
             auto: "auto";
             static: "static";
+            streaming: "streaming";
         }>>;
         group: z.ZodOptional<z.ZodEnum<{
-            streaming: "streaming";
             auto: "auto";
             static: "static";
+            streaming: "streaming";
         }>>;
         direct: z.ZodOptional<z.ZodEnum<{
-            streaming: "streaming";
             auto: "auto";
             static: "static";
+            streaming: "streaming";
         }>>;
     }, z.core.$strip>]>>;
     streaming: z.ZodOptional<z.ZodBoolean>;
@@ -139,9 +139,9 @@ export declare const FeishuAccountConfigSchema: z.ZodObject<{
     }, z.core.$strip>>;
     markdown: z.ZodOptional<z.ZodObject<{
         tables: z.ZodOptional<z.ZodEnum<{
-            code: "code";
             off: "off";
             bullets: "bullets";
+            code: "code";
         }>>;
     }, z.core.$strip>>;
     configWrites: z.ZodOptional<z.ZodBoolean>;
@@ -155,9 +155,9 @@ export declare const FeishuAccountConfigSchema: z.ZodObject<{
         maxEntries: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strip>>;
     reactionNotifications: z.ZodOptional<z.ZodEnum<{
-        all: "all";
         off: "off";
         own: "own";
+        all: "all";
     }>>;
     threadSession: z.ZodOptional<z.ZodBoolean>;
     uat: z.ZodOptional<z.ZodObject<{
@@ -181,23 +181,23 @@ export declare const FeishuConfigSchema: z.ZodObject<{
     webhookPath: z.ZodOptional<z.ZodString>;
     webhookPort: z.ZodOptional<z.ZodNumber>;
     dmPolicy: z.ZodOptional<z.ZodEnum<{
-        allowlist: "allowlist";
         open: "open";
         pairing: "pairing";
+        allowlist: "allowlist";
         disabled: "disabled";
     }>>;
     allowFrom: z.ZodPipe<z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>]>>, z.ZodTransform<string[] | undefined, string | string[] | undefined>>;
     groupPolicy: z.ZodOptional<z.ZodEnum<{
-        allowlist: "allowlist";
         open: "open";
+        allowlist: "allowlist";
         disabled: "disabled";
     }>>;
     groupAllowFrom: z.ZodPipe<z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>]>>, z.ZodTransform<string[] | undefined, string | string[] | undefined>>;
     requireMention: z.ZodOptional<z.ZodBoolean>;
     groups: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         groupPolicy: z.ZodOptional<z.ZodEnum<{
-            allowlist: "allowlist";
             open: "open";
+            allowlist: "allowlist";
             disabled: "disabled";
         }>>;
         requireMention: z.ZodOptional<z.ZodBoolean>;
@@ -240,24 +240,24 @@ export declare const FeishuConfigSchema: z.ZodObject<{
         accountId: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>>;
     replyMode: z.ZodOptional<z.ZodUnion<readonly [z.ZodEnum<{
-        streaming: "streaming";
         auto: "auto";
         static: "static";
+        streaming: "streaming";
     }>, z.ZodObject<{
         default: z.ZodOptional<z.ZodEnum<{
-            streaming: "streaming";
             auto: "auto";
             static: "static";
+            streaming: "streaming";
         }>>;
         group: z.ZodOptional<z.ZodEnum<{
-            streaming: "streaming";
             auto: "auto";
             static: "static";
+            streaming: "streaming";
         }>>;
         direct: z.ZodOptional<z.ZodEnum<{
-            streaming: "streaming";
             auto: "auto";
             static: "static";
+            streaming: "streaming";
         }>>;
     }, z.core.$strip>]>>;
     streaming: z.ZodOptional<z.ZodBoolean>;
@@ -275,9 +275,9 @@ export declare const FeishuConfigSchema: z.ZodObject<{
     }, z.core.$strip>>;
     markdown: z.ZodOptional<z.ZodObject<{
         tables: z.ZodOptional<z.ZodEnum<{
-            code: "code";
             off: "off";
             bullets: "bullets";
+            code: "code";
         }>>;
     }, z.core.$strip>>;
     configWrites: z.ZodOptional<z.ZodBoolean>;
@@ -291,9 +291,9 @@ export declare const FeishuConfigSchema: z.ZodObject<{
         maxEntries: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strip>>;
     reactionNotifications: z.ZodOptional<z.ZodEnum<{
-        all: "all";
         off: "off";
         own: "own";
+        all: "all";
     }>>;
     threadSession: z.ZodOptional<z.ZodBoolean>;
     uat: z.ZodOptional<z.ZodObject<{
@@ -316,23 +316,23 @@ export declare const FeishuConfigSchema: z.ZodObject<{
         webhookPath: z.ZodOptional<z.ZodString>;
         webhookPort: z.ZodOptional<z.ZodNumber>;
         dmPolicy: z.ZodOptional<z.ZodEnum<{
-            allowlist: "allowlist";
             open: "open";
             pairing: "pairing";
+            allowlist: "allowlist";
             disabled: "disabled";
         }>>;
         allowFrom: z.ZodPipe<z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>]>>, z.ZodTransform<string[] | undefined, string | string[] | undefined>>;
         groupPolicy: z.ZodOptional<z.ZodEnum<{
-            allowlist: "allowlist";
             open: "open";
+            allowlist: "allowlist";
             disabled: "disabled";
         }>>;
         groupAllowFrom: z.ZodPipe<z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>]>>, z.ZodTransform<string[] | undefined, string | string[] | undefined>>;
         requireMention: z.ZodOptional<z.ZodBoolean>;
         groups: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
             groupPolicy: z.ZodOptional<z.ZodEnum<{
-                allowlist: "allowlist";
                 open: "open";
+                allowlist: "allowlist";
                 disabled: "disabled";
             }>>;
             requireMention: z.ZodOptional<z.ZodBoolean>;
@@ -375,24 +375,24 @@ export declare const FeishuConfigSchema: z.ZodObject<{
             accountId: z.ZodOptional<z.ZodString>;
         }, z.core.$strip>>;
         replyMode: z.ZodOptional<z.ZodUnion<readonly [z.ZodEnum<{
-            streaming: "streaming";
             auto: "auto";
             static: "static";
+            streaming: "streaming";
         }>, z.ZodObject<{
             default: z.ZodOptional<z.ZodEnum<{
-                streaming: "streaming";
                 auto: "auto";
                 static: "static";
+                streaming: "streaming";
             }>>;
             group: z.ZodOptional<z.ZodEnum<{
-                streaming: "streaming";
                 auto: "auto";
                 static: "static";
+                streaming: "streaming";
             }>>;
             direct: z.ZodOptional<z.ZodEnum<{
-                streaming: "streaming";
                 auto: "auto";
                 static: "static";
+                streaming: "streaming";
             }>>;
         }, z.core.$strip>]>>;
         streaming: z.ZodOptional<z.ZodBoolean>;
@@ -410,9 +410,9 @@ export declare const FeishuConfigSchema: z.ZodObject<{
         }, z.core.$strip>>;
         markdown: z.ZodOptional<z.ZodObject<{
             tables: z.ZodOptional<z.ZodEnum<{
-                code: "code";
                 off: "off";
                 bullets: "bullets";
+                code: "code";
             }>>;
         }, z.core.$strip>>;
         configWrites: z.ZodOptional<z.ZodBoolean>;
@@ -426,9 +426,9 @@ export declare const FeishuConfigSchema: z.ZodObject<{
             maxEntries: z.ZodOptional<z.ZodNumber>;
         }, z.core.$strip>>;
         reactionNotifications: z.ZodOptional<z.ZodEnum<{
-            all: "all";
             off: "off";
             own: "own";
+            all: "all";
         }>>;
         threadSession: z.ZodOptional<z.ZodBoolean>;
         uat: z.ZodOptional<z.ZodObject<{

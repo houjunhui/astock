@@ -5,14 +5,49 @@
  *
  * Message sending for the Lark/Feishu channel plugin.
  */
-import { LarkClient } from '../../core/lark-client';
-import { normalizeFeishuTarget, normalizeMessageId, resolveReceiveIdType } from '../../core/targets';
-import { runWithMessageUnavailableGuard } from '../../core/message-unavailable';
-import { optimizeMarkdownStyle } from '../../card/markdown-style';
-import { buildMentionedMessage, buildMentionedCardContent } from '../inbound/mention';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sendMessageFeishu = sendMessageFeishu;
+exports.sendCardFeishu = sendCardFeishu;
+exports.updateCardFeishu = updateCardFeishu;
+exports.buildMarkdownCard = buildMarkdownCard;
+exports.buildI18nMarkdownCard = buildI18nMarkdownCard;
+exports.sendMarkdownCardFeishu = sendMarkdownCardFeishu;
+exports.editMessageFeishu = editMessageFeishu;
+const accounts_1 = require("../../core/accounts");
+const lark_client_1 = require("../../core/lark-client");
+const targets_1 = require("../../core/targets");
+const message_unavailable_1 = require("../../core/message-unavailable");
+const markdown_style_1 = require("../../card/markdown-style");
+const mention_1 = require("../inbound/mention");
 // ---------------------------------------------------------------------------
 // sendMessageFeishu
 // ---------------------------------------------------------------------------
+/**
+ * Resolve the configured markdown table mode for Feishu and convert tables if
+ * the runtime converter is available.
+ *
+ * @param cfg - Plugin configuration
+ * @param text - Raw markdown text
+ * @param accountId - Optional account identifier for multi-account setups
+ * @returns Converted text, or the original text when runtime helpers are unavailable
+ */
+function convertMarkdownTablesForFeishu(cfg, text, accountId) {
+    try {
+        const accountScopedCfg = (0, accounts_1.createAccountScopedConfig)(cfg, accountId);
+        const runtime = lark_client_1.LarkClient.runtime;
+        if (runtime?.channel?.text?.convertMarkdownTables && runtime.channel.text.resolveMarkdownTableMode) {
+            const tableMode = runtime.channel.text.resolveMarkdownTableMode({
+                cfg: accountScopedCfg,
+                channel: 'feishu',
+            });
+            return runtime.channel.text.convertMarkdownTables(text, tableMode);
+        }
+    }
+    catch {
+        // Runtime not available -- use the text as-is.
+    }
+    return text;
+}
 /**
  * Send a text message (rendered as a Feishu "post" with markdown support)
  * to a chat or user.
@@ -28,38 +63,52 @@ import { buildMentionedMessage, buildMentionedCardContent } from '../inbound/men
  * @param params - See {@link SendFeishuMessageParams}.
  * @returns The send result containing the new message ID.
  */
-export async function sendMessageFeishu(params) {
-    const { cfg, to, text, replyToMessageId, mentions, accountId, replyInThread } = params;
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
-    // Apply mention prefix if targets are provided.
-    let messageText = text;
-    if (mentions && mentions.length > 0) {
-        messageText = buildMentionedMessage(mentions, messageText);
-    }
-    // Convert markdown tables to Feishu-compatible format if the runtime
-    // provides a converter.
-    try {
-        const runtime = LarkClient.runtime;
-        if (runtime?.channel?.text?.convertMarkdownTables) {
-            messageText = runtime.channel.text.convertMarkdownTables(messageText, 'bullets');
-        }
-    }
-    catch {
-        // Runtime not available -- use the text as-is.
-    }
-    // Apply Markdown style optimization.
-    messageText = optimizeMarkdownStyle(messageText, 1);
+async function sendMessageFeishu(params) {
+    const { cfg, to, text, replyToMessageId, mentions, accountId, replyInThread, i18nTexts } = params;
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
     // Build the post-format content envelope.
-    const contentPayload = JSON.stringify({
-        zh_cn: {
-            content: [[{ tag: 'md', text: messageText }]],
-        },
-    });
+    let contentPayload;
+    if (i18nTexts && Object.keys(i18nTexts).length > 0) {
+        // Multi-locale post: build each locale's content independently.
+        const postBody = {};
+        for (const [locale, localeText] of Object.entries(i18nTexts)) {
+            let processed = localeText;
+            // Apply mention prefix if targets are provided.
+            if (mentions && mentions.length > 0) {
+                processed = (0, mention_1.buildMentionedMessage)(mentions, processed);
+            }
+            // Convert markdown tables to Feishu-compatible format.
+            processed = convertMarkdownTablesForFeishu(cfg, processed, accountId);
+            // Apply Markdown style optimization.
+            processed = (0, markdown_style_1.optimizeMarkdownStyle)(processed, 1);
+            postBody[locale] = {
+                content: [[{ tag: 'md', text: processed }]],
+            };
+        }
+        contentPayload = JSON.stringify(postBody);
+    }
+    else {
+        // Single-locale (zh_cn) post: original behavior.
+        let messageText = text;
+        // Apply mention prefix if targets are provided.
+        if (mentions && mentions.length > 0) {
+            messageText = (0, mention_1.buildMentionedMessage)(mentions, messageText);
+        }
+        // Convert markdown tables to Feishu-compatible format.
+        messageText = convertMarkdownTablesForFeishu(cfg, messageText, accountId);
+        // Apply Markdown style optimization.
+        messageText = (0, markdown_style_1.optimizeMarkdownStyle)(messageText, 1);
+        contentPayload = JSON.stringify({
+            zh_cn: {
+                content: [[{ tag: 'md', text: messageText }]],
+            },
+        });
+    }
     if (replyToMessageId) {
         // Send as a threaded reply.
         // 规范化 message_id，处理合成 ID（如 "om_xxx:auth-complete"）
-        const normalizedId = normalizeMessageId(replyToMessageId);
-        const response = await runWithMessageUnavailableGuard({
+        const normalizedId = (0, targets_1.normalizeMessageId)(replyToMessageId);
+        const response = await (0, message_unavailable_1.runWithMessageUnavailableGuard)({
             messageId: normalizedId,
             operation: 'im.message.reply(post)',
             fn: () => client.im.message.reply({
@@ -79,11 +128,11 @@ export async function sendMessageFeishu(params) {
         };
     }
     // Send as a new message.
-    const target = normalizeFeishuTarget(to);
+    const target = (0, targets_1.normalizeFeishuTarget)(to);
     if (!target) {
         throw new Error(`[feishu-send] Invalid target: "${to}"`);
     }
-    const receiveIdType = resolveReceiveIdType(target);
+    const receiveIdType = (0, targets_1.resolveReceiveIdType)(target);
     const response = await client.im.message.create({
         params: {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,14 +158,14 @@ export async function sendMessageFeishu(params) {
  * @param params - See {@link SendFeishuCardParams}.
  * @returns The send result containing the new message ID.
  */
-export async function sendCardFeishu(params) {
+async function sendCardFeishu(params) {
     const { cfg, to, card, replyToMessageId, accountId, replyInThread } = params;
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
     const contentPayload = JSON.stringify(card);
     if (replyToMessageId) {
         // 规范化 message_id，处理合成 ID（如 "om_xxx:auth-complete"）
-        const normalizedId = normalizeMessageId(replyToMessageId);
-        const response = await runWithMessageUnavailableGuard({
+        const normalizedId = (0, targets_1.normalizeMessageId)(replyToMessageId);
+        const response = await (0, message_unavailable_1.runWithMessageUnavailableGuard)({
             messageId: normalizedId,
             operation: 'im.message.reply(interactive)',
             fn: () => client.im.message.reply({
@@ -135,11 +184,11 @@ export async function sendCardFeishu(params) {
             chatId: response?.data?.chat_id ?? '',
         };
     }
-    const target = normalizeFeishuTarget(to);
+    const target = (0, targets_1.normalizeFeishuTarget)(to);
     if (!target) {
         throw new Error(`[feishu-send] Invalid target: "${to}"`);
     }
-    const receiveIdType = resolveReceiveIdType(target);
+    const receiveIdType = (0, targets_1.resolveReceiveIdType)(target);
     const response = await client.im.message.create({
         params: {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -171,10 +220,10 @@ export async function sendCardFeishu(params) {
  * @param params.card      - The new card content.
  * @param params.accountId - Optional account identifier.
  */
-export async function updateCardFeishu(params) {
+async function updateCardFeishu(params) {
     const { cfg, messageId, card, accountId } = params;
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
-    await runWithMessageUnavailableGuard({
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
+    await (0, message_unavailable_1.runWithMessageUnavailableGuard)({
         messageId,
         operation: 'im.message.patch(interactive)',
         fn: () => client.im.message.patch({
@@ -200,8 +249,8 @@ export async function updateCardFeishu(params) {
  * @param text - The markdown text to render in the card.
  * @returns A card JSON object ready to be sent via {@link sendCardFeishu}.
  */
-export function buildMarkdownCard(text) {
-    const optimizedText = optimizeMarkdownStyle(text);
+function buildMarkdownCard(text) {
+    const optimizedText = (0, markdown_style_1.optimizeMarkdownStyle)(text);
     return {
         schema: '2.0',
         config: {
@@ -212,6 +261,42 @@ export function buildMarkdownCard(text) {
                 {
                     tag: 'markdown',
                     content: optimizedText,
+                },
+            ],
+        },
+    };
+}
+/**
+ * Build an i18n-aware Feishu Interactive Message Card containing a single
+ * markdown element with per-locale content.
+ *
+ * Uses the CardKit v2 `i18n_content` field so the Feishu client
+ * auto-selects the locale matching the user's language setting.
+ *
+ * @param i18nTexts - A map of locale to markdown text (e.g. { zh_cn: '...', en_us: '...' }).
+ * @returns A card JSON object ready to be sent via {@link sendCardFeishu}.
+ */
+function buildI18nMarkdownCard(i18nTexts) {
+    const locales = Object.keys(i18nTexts);
+    // Determine fallback content (prefer en_us, then first available locale).
+    const fallbackLocale = locales.includes('en_us') ? 'en_us' : locales[0];
+    const fallbackText = (0, markdown_style_1.optimizeMarkdownStyle)(i18nTexts[fallbackLocale]);
+    // Build i18n_content with optimized text for each locale.
+    const i18nContent = {};
+    for (const [locale, text] of Object.entries(i18nTexts)) {
+        i18nContent[locale] = (0, markdown_style_1.optimizeMarkdownStyle)(text);
+    }
+    return {
+        schema: '2.0',
+        config: {
+            wide_screen_mode: true,
+        },
+        body: {
+            elements: [
+                {
+                    tag: 'markdown',
+                    content: fallbackText,
+                    i18n_content: i18nContent,
                 },
             ],
         },
@@ -234,11 +319,11 @@ export function buildMarkdownCard(text) {
  * @param params.accountId        - Optional account identifier.
  * @returns The send result containing the new message ID.
  */
-export async function sendMarkdownCardFeishu(params) {
+async function sendMarkdownCardFeishu(params) {
     const { cfg, to, text, replyToMessageId, mentions, accountId, replyInThread } = params;
     let cardText = text;
     if (mentions && mentions.length > 0) {
-        cardText = buildMentionedCardContent(mentions, cardText);
+        cardText = (0, mention_1.buildMentionedCardContent)(mentions, cardText);
     }
     const card = buildMarkdownCard(cardText);
     return sendCardFeishu({
@@ -264,16 +349,18 @@ export async function sendMarkdownCardFeishu(params) {
  * @param params.text      - The new message text.
  * @param params.accountId - Optional account identifier.
  */
-export async function editMessageFeishu(params) {
+async function editMessageFeishu(params) {
     const { cfg, messageId, text, accountId } = params;
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
-    const optimizedText = optimizeMarkdownStyle(text);
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
+    const convertedText = convertMarkdownTablesForFeishu(cfg, text, accountId);
+    // Use cardVersion=1 consistent with sendMessageFeishu post path.
+    const optimizedText = (0, markdown_style_1.optimizeMarkdownStyle)(convertedText, 1);
     const contentPayload = JSON.stringify({
         zh_cn: {
             content: [[{ tag: 'md', text: optimizedText }]],
         },
     });
-    await runWithMessageUnavailableGuard({
+    await (0, message_unavailable_1.runWithMessageUnavailableGuard)({
         messageId,
         operation: 'im.message.update(post)',
         fn: () => client.im.message.update({

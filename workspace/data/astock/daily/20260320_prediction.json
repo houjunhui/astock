@@ -1,0 +1,833 @@
+{
+  "date": "20260320",
+  "model_version": "v3.0",
+  "created_at": "2026-03-22T23:47:38.391018",
+  "market_sentiment": {
+    "zt_count": 28,
+    "lianban_max": 5,
+    "phase": "tuichao",
+    "phase_name": "退潮"
+  },
+  "stocks": [
+    {
+      "code": "603687",
+      "lb": 3,
+      "technicals": {
+        "trend": "底部金叉",
+        "rsi": 74.1,
+        "vr": 0.32,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "缩量"
+      },
+      "prediction": {
+        "jb_prob": 31.4,
+        "dz_prob": 68.6,
+        "distribution": {
+          "3": 68.6,
+          "4": 21.4,
+          "5": 10.0
+        },
+        "signal": "底部金叉, 极度缩量, MACD多头, MA20上方",
+        "base_prob": 0.2,
+        "adj_factor": 1.57
+      },
+      "name": "大胜达",
+      "industry": "包装印刷",
+      "outcome": "断板",
+      "actual_boards": 3,
+      "verdict": null
+    },
+    {
+      "code": "600617",
+      "lb": 2,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 65.7,
+        "vr": 2.13,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 24.1,
+        "dz_prob": 75.9,
+        "distribution": {
+          "2": 75.9,
+          "3": 18.7,
+          "4": 5.4
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.15,
+        "adj_factor": 1.61
+      },
+      "name": "国新能源",
+      "industry": "燃气Ⅱ",
+      "outcome": "断板",
+      "actual_boards": 2,
+      "verdict": null
+    },
+    {
+      "code": "000601",
+      "lb": 3,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 75.6,
+        "vr": 1.19,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "正常量"
+      },
+      "prediction": {
+        "jb_prob": 22.5,
+        "dz_prob": 77.5,
+        "distribution": {
+          "3": 77.5,
+          "4": 17.4,
+          "5": 5.2
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.2,
+        "adj_factor": 1.13
+      },
+      "name": "韶能股份",
+      "industry": "电力",
+      "outcome": "断板",
+      "actual_boards": 3,
+      "verdict": null
+    },
+    {
+      "code": "000677",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 68.7,
+        "vr": 1.05,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "正常量"
+      },
+      "prediction": {
+        "jb_prob": 20.9,
+        "dz_prob": 79.1,
+        "distribution": {
+          "1": 79.1,
+          "2": 17.4,
+          "3": 3.5
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.61
+      },
+      "name": "恒天海龙",
+      "industry": "化学纤维",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "002150",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 69.1,
+        "vr": 1.18,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "正常量"
+      },
+      "prediction": {
+        "jb_prob": 20.9,
+        "dz_prob": 79.1,
+        "distribution": {
+          "1": 79.1,
+          "2": 17.4,
+          "3": 3.5
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.61
+      },
+      "name": "正泰电源",
+      "industry": "通用设备",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "603026",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 66.1,
+        "vr": 1.55,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 20.9,
+        "dz_prob": 79.1,
+        "distribution": {
+          "1": 79.1,
+          "2": 17.4,
+          "3": 3.5
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.61
+      },
+      "name": "石大胜华",
+      "industry": "电池",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "603538",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 72.9,
+        "vr": 2.25,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 14.7,
+        "dz_prob": 85.3,
+        "distribution": {
+          "1": 85.3,
+          "2": 12.9,
+          "3": 1.7
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.13
+      },
+      "name": "美诺华",
+      "industry": "化学制药",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "002256",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 71.8,
+        "vr": 2.01,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 14.7,
+        "dz_prob": 85.3,
+        "distribution": {
+          "1": 85.3,
+          "2": 12.9,
+          "3": 1.7
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.13
+      },
+      "name": "兆新股份",
+      "industry": "电力",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "002309",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 74.2,
+        "vr": 1.35,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "正常量"
+      },
+      "prediction": {
+        "jb_prob": 14.7,
+        "dz_prob": 85.3,
+        "distribution": {
+          "1": 85.3,
+          "2": 12.9,
+          "3": 1.7
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.13
+      },
+      "name": "中利集团",
+      "industry": "光伏设备",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "000509",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 79.7,
+        "vr": 1.37,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "正常量"
+      },
+      "prediction": {
+        "jb_prob": 14.7,
+        "dz_prob": 85.3,
+        "distribution": {
+          "1": 85.3,
+          "2": 12.9,
+          "3": 1.7
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.13
+      },
+      "name": "华塑控股",
+      "industry": "光学光电",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "605299",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 78.9,
+        "vr": 2.43,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 14.7,
+        "dz_prob": 85.3,
+        "distribution": {
+          "1": 85.3,
+          "2": 12.9,
+          "3": 1.7
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.13
+      },
+      "name": "舒华体育",
+      "industry": "文娱用品",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "301658",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 78.7,
+        "vr": 1.57,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 14.7,
+        "dz_prob": 85.3,
+        "distribution": {
+          "1": 85.3,
+          "2": 12.9,
+          "3": 1.7
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.13
+      },
+      "name": "首航新能",
+      "industry": "光伏设备",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "603778",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 76.3,
+        "vr": 1.46,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "正常量"
+      },
+      "prediction": {
+        "jb_prob": 14.7,
+        "dz_prob": 85.3,
+        "distribution": {
+          "1": 85.3,
+          "2": 12.9,
+          "3": 1.7
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 1.13
+      },
+      "name": "国晟科技",
+      "industry": "光伏设备",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "002428",
+      "lb": 1,
+      "technicals": {
+        "trend": "顶部死叉",
+        "rsi": 44.2,
+        "vr": 0.31,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "缩量"
+      },
+      "prediction": {
+        "jb_prob": 11.2,
+        "dz_prob": 88.8,
+        "distribution": {
+          "1": 88.8,
+          "2": 10.2,
+          "3": 1.0
+        },
+        "signal": "⚠️顶部死叉, 极度缩量, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.86
+      },
+      "name": "云南锗业",
+      "industry": "小金属",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "600683",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 84.5,
+        "vr": 1.15,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "正常量"
+      },
+      "prediction": {
+        "jb_prob": 10.5,
+        "dz_prob": 89.5,
+        "distribution": {
+          "1": 89.5,
+          "2": 9.6,
+          "3": 0.9
+        },
+        "signal": "上升通道, ⚠️RSI84超买, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.8
+      },
+      "name": "京投发展",
+      "industry": "房地产开",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "603165",
+      "lb": 1,
+      "technicals": {
+        "trend": "顶部死叉",
+        "rsi": 57.1,
+        "vr": 2.29,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 7.5,
+        "dz_prob": 92.5,
+        "distribution": {
+          "1": 92.5,
+          "2": 6.9,
+          "3": 0.6
+        },
+        "signal": "⚠️顶部死叉, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.57
+      },
+      "name": "荣晟环保",
+      "industry": "造纸",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "000862",
+      "lb": 1,
+      "technicals": {
+        "trend": "顶部死叉",
+        "rsi": 69.2,
+        "vr": 1.68,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 7.5,
+        "dz_prob": 92.5,
+        "distribution": {
+          "1": 92.5,
+          "2": 6.9,
+          "3": 0.6
+        },
+        "signal": "⚠️顶部死叉, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.57
+      },
+      "name": "银星能源",
+      "industry": "电力",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "600310",
+      "lb": 1,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 75.0,
+        "vr": 4.15,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "爆量"
+      },
+      "prediction": {
+        "jb_prob": 7.3,
+        "dz_prob": 92.7,
+        "distribution": {
+          "1": 92.7,
+          "2": 6.8,
+          "3": 0.5
+        },
+        "signal": "上升通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.56
+      },
+      "name": "广西能源",
+      "industry": "电力",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "600726",
+      "lb": 2,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 95.2,
+        "vr": 2.52,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 7.2,
+        "dz_prob": 92.8,
+        "distribution": {
+          "2": 92.8,
+          "3": 6.5,
+          "4": 0.7
+        },
+        "signal": "上升通道, ⚠️RSI95超买, MACD多头, MA20上方",
+        "base_prob": 0.15,
+        "adj_factor": 0.48
+      },
+      "name": "华电能源",
+      "industry": "电力",
+      "outcome": "断板",
+      "actual_boards": 2,
+      "verdict": null
+    },
+    {
+      "code": "605050",
+      "lb": 1,
+      "technicals": {
+        "trend": "底部金叉",
+        "rsi": 58.5,
+        "vr": 6.57,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "爆量"
+      },
+      "prediction": {
+        "jb_prob": 6.8,
+        "dz_prob": 93.2,
+        "distribution": {
+          "1": 93.2,
+          "2": 6.3,
+          "3": 0.5
+        },
+        "signal": "底部金叉, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.52
+      },
+      "name": "福然德",
+      "industry": "物流",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "600604",
+      "lb": 1,
+      "technicals": {
+        "trend": "底部金叉",
+        "rsi": 64.2,
+        "vr": 5.97,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "爆量"
+      },
+      "prediction": {
+        "jb_prob": 6.8,
+        "dz_prob": 93.2,
+        "distribution": {
+          "1": 93.2,
+          "2": 6.3,
+          "3": 0.5
+        },
+        "signal": "底部金叉, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.52
+      },
+      "name": "市北高新",
+      "industry": "房地产开",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "002310",
+      "lb": 2,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 85.8,
+        "vr": 3.38,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "爆量"
+      },
+      "prediction": {
+        "jb_prob": 6.0,
+        "dz_prob": 94.0,
+        "distribution": {
+          "2": 94.0,
+          "3": 5.4,
+          "4": 0.6
+        },
+        "signal": "上升通道, ⚠️RSI86超买, MACD多头, MA20上方",
+        "base_prob": 0.15,
+        "adj_factor": 0.4
+      },
+      "name": "东方新能",
+      "industry": "电力",
+      "outcome": "断板",
+      "actual_boards": 2,
+      "verdict": null
+    },
+    {
+      "code": "603381",
+      "lb": 1,
+      "technicals": {
+        "trend": "下降通道",
+        "rsi": 52.4,
+        "vr": 1.78,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 6.0,
+        "dz_prob": 94.0,
+        "distribution": {
+          "1": 94.0,
+          "2": 5.5,
+          "3": 0.4
+        },
+        "signal": "⚠️下降通道, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.46
+      },
+      "name": "永臻股份",
+      "industry": "光伏设备",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "000020",
+      "lb": 5,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 90.3,
+        "vr": 1.44,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "正常量"
+      },
+      "prediction": {
+        "jb_prob": 4.8,
+        "dz_prob": 95.2,
+        "distribution": {
+          "5": 95.2,
+          "6": 4.5,
+          "7": 0.4
+        },
+        "signal": "上升通道, ⚠️RSI90超买, MACD多头, MA20上方",
+        "base_prob": 0.1,
+        "adj_factor": 0.48
+      },
+      "name": "深华发Ａ",
+      "industry": "光学光电",
+      "outcome": "断板",
+      "actual_boards": 5,
+      "verdict": null
+    },
+    {
+      "code": "300827",
+      "lb": 1,
+      "technicals": {
+        "trend": "顶部死叉",
+        "rsi": 70.9,
+        "vr": 3.74,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "爆量"
+      },
+      "prediction": {
+        "jb_prob": 2.6,
+        "dz_prob": 97.4,
+        "distribution": {
+          "1": 97.4,
+          "2": 2.4,
+          "3": 0.2
+        },
+        "signal": "⚠️顶部死叉, MACD多头, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.2
+      },
+      "name": "上能电气",
+      "industry": "光伏设备",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "605099",
+      "lb": 1,
+      "technicals": {
+        "trend": "下降通道",
+        "rsi": 41.1,
+        "vr": 1.84,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20下方",
+        "vol_status": "放量"
+      },
+      "prediction": {
+        "jb_prob": 2.2,
+        "dz_prob": 97.8,
+        "distribution": {
+          "1": 97.8,
+          "2": 2.0,
+          "3": 0.2
+        },
+        "signal": "⚠️下降通道",
+        "base_prob": 0.13,
+        "adj_factor": 0.17
+      },
+      "name": "共创草坪",
+      "industry": "家居用品",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "001283",
+      "lb": 1,
+      "technicals": {
+        "trend": "下降通道",
+        "rsi": 55.6,
+        "vr": 4.44,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "爆量"
+      },
+      "prediction": {
+        "jb_prob": 2.1,
+        "dz_prob": 97.9,
+        "distribution": {
+          "1": 97.9,
+          "2": 1.9,
+          "3": 0.2
+        },
+        "signal": "⚠️下降通道, MA20上方",
+        "base_prob": 0.13,
+        "adj_factor": 0.16
+      },
+      "name": "豪鹏科技",
+      "industry": "电池",
+      "outcome": "断板",
+      "actual_boards": 1,
+      "verdict": null
+    },
+    {
+      "code": "600396",
+      "lb": 5,
+      "technicals": {
+        "trend": "上升通道",
+        "rsi": 91.6,
+        "vr": 3.62,
+        "macd_state": "中性",
+        "price_vs_ma20": "MA20上方",
+        "vol_status": "爆量"
+      },
+      "prediction": {
+        "jb_prob": 1.5,
+        "dz_prob": 98.5,
+        "distribution": {
+          "5": 98.5,
+          "6": 1.4,
+          "7": 0.1
+        },
+        "signal": "上升通道, ⚠️RSI92超买, MACD多头, MA20上方",
+        "base_prob": 0.1,
+        "adj_factor": 0.15
+      },
+      "name": "华电辽能",
+      "industry": "电力",
+      "outcome": "断板",
+      "actual_boards": 5,
+      "verdict": null
+    }
+  ],
+  "summary": {
+    "total": 28,
+    "correct": 28,
+    "partial": 1,
+    "wrong": -1,
+    "accuracy": 100.0
+  },
+  "verified_at": "2026-03-22T23:50:25.850645"
+}

@@ -7,9 +7,12 @@
  *
  * 从 package.json 读取版本号并生成 User-Agent 字符串。
  */
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { readFileSync } from 'node:fs';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getPluginVersion = getPluginVersion;
+exports.getUserAgent = getUserAgent;
+const node_url_1 = require("node:url");
+const node_path_1 = require("node:path");
+const node_fs_1 = require("node:fs");
 /** 缓存的版本号 */
 let cachedVersion;
 /**
@@ -17,15 +20,15 @@ let cachedVersion;
  *
  * @returns 版本号字符串，如 "2026.2.28.5"；读取失败返回 "unknown"
  */
-export function getPluginVersion() {
+function getPluginVersion() {
     if (cachedVersion)
         return cachedVersion;
     try {
         // 当前文件: src/core/version.ts → 向上两级到达项目根目录
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = dirname(__filename);
-        const packageJsonPath = join(__dirname, '..', '..', 'package.json');
-        const raw = readFileSync(packageJsonPath, 'utf8');
+        const __filename = (0, node_url_1.fileURLToPath)(import.meta.url);
+        const __dirname = (0, node_path_1.dirname)(__filename);
+        const packageJsonPath = (0, node_path_1.join)(__dirname, '..', '..', 'package.json');
+        const raw = (0, node_fs_1.readFileSync)(packageJsonPath, 'utf8');
         const pkg = JSON.parse(raw);
         cachedVersion = pkg.version ?? 'unknown';
         return cachedVersion;
@@ -45,6 +48,6 @@ export function getPluginVersion() {
  * getUserAgent() // => "openclaw-lark/2026.2.28.5"
  * ```
  */
-export function getUserAgent() {
+function getUserAgent() {
     return `openclaw-lark/${getPluginVersion()}`;
 }

@@ -12,14 +12,21 @@
  * - `resolveUserName()` — single-user fallback via `contact.user.get`
  * - `clearUserNameCache()` — teardown hook (called from LarkClient.clearCache)
  */
-import { LarkClient } from '../../core/lark-client';
-import { extractPermissionError } from './permission';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserNameCache = void 0;
+exports.getUserNameCache = getUserNameCache;
+exports.clearUserNameCache = clearUserNameCache;
+exports.batchResolveUserNames = batchResolveUserNames;
+exports.createBatchResolveNames = createBatchResolveNames;
+exports.resolveUserName = resolveUserName;
+const lark_client_1 = require("../../core/lark-client");
+const permission_1 = require("./permission");
 // ---------------------------------------------------------------------------
 // UserNameCache
 // ---------------------------------------------------------------------------
 const DEFAULT_MAX_SIZE = 500;
 const DEFAULT_TTL_MS = 30 * 60 * 1000; // 30 minutes
-export class UserNameCache {
+class UserNameCache {
     map = new Map();
     maxSize;
     ttlMs;
@@ -93,12 +100,13 @@ export class UserNameCache {
         }
     }
 }
+exports.UserNameCache = UserNameCache;
 // ---------------------------------------------------------------------------
 // Account-scoped singleton registry
 // ---------------------------------------------------------------------------
 const registry = new Map();
 /** Get (or create) the UserNameCache for a given account. */
-export function getUserNameCache(accountId) {
+function getUserNameCache(accountId) {
     let c = registry.get(accountId);
     if (!c) {
         c = new UserNameCache();
@@ -111,7 +119,7 @@ export function getUserNameCache(accountId) {
  * - With `accountId`: clear that single cache.
  * - Without: clear all caches.
  */
-export function clearUserNameCache(accountId) {
+function clearUserNameCache(accountId) {
     if (accountId !== undefined) {
         registry.get(accountId)?.clear();
         registry.delete(accountId);
@@ -138,7 +146,7 @@ const BATCH_SIZE = 50;
  *
  * Best-effort: API errors are logged but never thrown.
  */
-export async function batchResolveUserNames(params) {
+async function batchResolveUserNames(params) {
     const { account, openIds, log } = params;
     if (!account.configured || openIds.length === 0) {
         return new Map();
@@ -149,7 +157,7 @@ export async function batchResolveUserNames(params) {
     const missing = [...new Set(cache.filterMissing(openIds))];
     if (missing.length === 0)
         return result;
-    const client = LarkClient.fromAccount(account).sdk;
+    const client = lark_client_1.LarkClient.fromAccount(account).sdk;
     // Split into chunks of BATCH_SIZE and call SDK method
     for (let i = 0; i < missing.length; i += BATCH_SIZE) {
         const chunk = missing.slice(i, i + BATCH_SIZE);
@@ -193,7 +201,7 @@ export async function batchResolveUserNames(params) {
  * The returned function calls `batchResolveUserNames` with the given
  * account and log function, populating the TAT user-name cache.
  */
-export function createBatchResolveNames(account, log) {
+function createBatchResolveNames(account, log) {
     return async (openIds) => {
         await batchResolveUserNames({ account, openIds, log });
     };
@@ -204,7 +212,7 @@ export function createBatchResolveNames(account, log) {
  * Checks the account-scoped cache first, then falls back to the
  * `contact.user.get` API (same as the old `resolveFeishuSenderName`).
  */
-export async function resolveUserName(params) {
+async function resolveUserName(params) {
     const { account, openId, log } = params;
     if (!account.configured || !openId)
         return {};
@@ -212,7 +220,7 @@ export async function resolveUserName(params) {
     if (cache.has(openId))
         return { name: cache.get(openId) ?? '' };
     try {
-        const client = LarkClient.fromAccount(account).sdk;
+        const client = lark_client_1.LarkClient.fromAccount(account).sdk;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res = await client.contact.user.get({
             path: { user_id: openId },
@@ -229,7 +237,7 @@ export async function resolveUserName(params) {
         return { name: name || undefined };
     }
     catch (err) {
-        const permErr = extractPermissionError(err);
+        const permErr = (0, permission_1.extractPermissionError)(err);
         if (permErr) {
             log(`feishu: permission error resolving user name: code=${permErr.code}`);
             // Cache empty name so we don't retry a known-failing openId

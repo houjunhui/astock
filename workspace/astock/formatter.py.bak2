@@ -1,0 +1,123 @@
+"""
+astock.formatter
+输出格式化 - 终端、飞书消息
+"""
+
+# ===================== 终端格式化 =====================
+
+def fmt_predict_terminal(date, results, sector_raw, phase, phase_name, sentiment=''):
+    """终端预测输出"""
+    lines = [
+        f"{'=' * 60}",
+        f"  A股超短每日预测 v3.2  {date}",
+        f"{'=' * 60}",
+        f"",
+        f"市场情绪: {sentiment if sentiment else phase_name}  涨停股: {len(results)}只",
+        f"",
+    ]
+
+    # 板块效应
+    if sector_raw:
+        sorted_sectors = sorted(sector_raw.items(), key=lambda x: x[1]['total'], reverse=True)
+        lines.append("  板块效应")
+        lines.append("-" * 40)
+        for ind, data in sorted_sectors:
+            n = data['total']
+            tag = '🚀板块联动' if n >= 3 else ('📌多股' if n == 2 else '')
+            lines.append(f"  {ind[:12]:<12}{n:<6}{tag}")
+        lines.append("")
+
+    # 晋级分布
+    gt30 = sum(1 for r in results if r['prediction']['jb_prob'] > 30)
+    gt15 = sum(1 for r in results if 15 < r['prediction']['jb_prob'] <= 30)
+    lt15 = len(results) - gt30 - gt15
+    lines.append(f"晋级分布: >30%:{gt30}只 / 15-30%:{gt15}只 / <15%:{lt15}只")
+    lines.append("")
+
+    return '\n'.join(lines)
+
+
+def fmt_auction_mobile(results, sector_raw, phase="退潮"):
+    """
+    手机易读格式：分行输出，每行一个标的。
+    """
+    lines = ["📋 明日竞价自检（重点6只）\n"]
+
+    for r in results[:6]:
+        p = r['prediction']
+        n = sector_raw.get(r['industry'], {}).get('total', 0)
+        sector_hot = (n >= 3)
+        from auction import auction_ok
+        ok_min, ok_max, vol, warn = auction_ok(
+            r['code'], r['name'], r['lb'], p['jb_prob'],
+            vr=r.get('vr'), sector_hot=sector_hot, phase=phase
+        )
+        sig = p.get('signal', '')
+        auction_sig = p.get('auction_signal', '')
+        lb_sig = p.get('lb_signal', '')
+        sig_short = sig.split(',')[0] if sig else ''
+        xx_prob = p.get('calibrated_xx_prob', 0)
+        dz_warn = p.get('dz_warn', '')
+        is_yao = p.get('is_yao', False)
+        raw_jb = p.get('raw_jb_prob', p['jb_prob'])
+
+        lines.append(f"● {r['name']}({r['code']})")
+        if is_yao:
+            yao_jj = p.get('jb_prob', 0)
+            lines.append(f"  {r['lb']}板 | 妖股晋级{yao_jj:.0f}% | 续涨{xx_prob:.0f}% | 竞价{ok_min}~{ok_max}% | {vol}")
+        else:
+            lines.append(f"  {r['lb']}板 | 晋级{p['jb_prob']:.1f}% | 续涨{xx_prob:.0f}% | 竞价{ok_min}~{ok_max}% | {vol}")
+        reason = r.get('reason', '')
+        if reason:
+            lines.append(f"  📌涨停原因: {reason}")
+        # 竞价修正信号
+        if auction_sig and '缺失' not in auction_sig:
+            lines.append(f"  🔍竞价修正: {auction_sig}")
+        # 板位风控信号
+        if lb_sig and '正常' not in lb_sig:
+            lines.append(f"  ⚠️{lb_sig}")
+        # 断板风险
+        if dz_warn:
+            lines.append(f"  ⚠️断板风险: {dz_warn}")
+        lines.append(f"  {warn} | {sig_short}")
+        lines.append("")
+
+    # 次级
+    others = [r for r in results[6:10]]
+    if others:
+        lines.append("📋 次级关注（按需参考）\n")
+        for r in others:
+            p = r['prediction']
+            n = sector_raw.get(r['industry'], {}).get('total', 0)
+            sector_hot = (n >= 3)
+            ok_min, ok_max, vol, warn = auction_ok(
+                r['code'], r['name'], r['lb'], p['jb_prob'],
+                vr=r.get('vr'), sector_hot=sector_hot, phase=phase
+            )
+            lines.append(f"  {r['name']}({r['code']}) {r['lb']}板 竞价{ok_min}~{ok_max}% {vol}")
+
+    return '\n'.join(lines)
+
+
+def fmt_positions(conn):
+    """持仓格式化"""
+    rows = conn.execute(
+        "SELECT * FROM positions WHERE status='持仓' ORDER BY created_at DESC"
+    ).fetchall()
+    if not rows:
+        return "暂无持仓记录。"
+
+    lines = [
+        f"{'=' * 60}",
+        f"  当前持仓",
+        f"{'=' * 60}",
+        f"{'代码':<8}{'名称':<10}{'买入日':<10}{'买入价':<10}{'现价':<10}{'浮盈%':<10}{'持仓天':<8}{'状态'}",
+        f"{'-' * 70}",
+    ]
+    for r in rows:
+        lines.append(
+            f"{r['code']:<8}{r['name']:<10}{r['buy_date']:<10}"
+            f"{r['buy_price']:<10.2f}{r['cur_price']:<10.2f}"
+            f"{r['profit_pct']:<10.1f}{r['hold_days']:<8}{r['status']}"
+        )
+    return '\n'.join(lines)

@@ -8,6 +8,10 @@
  * Extracted from reply-dispatcher.ts to enable independent testing
  * and eliminate `as any` casts on FeishuConfig.
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.resolveReplyMode = resolveReplyMode;
+exports.expandAutoMode = expandAutoMode;
+exports.shouldUseCard = shouldUseCard;
 // ---------------------------------------------------------------------------
 // resolveReplyMode
 // ---------------------------------------------------------------------------
@@ -16,7 +20,7 @@
  *
  * Priority: replyMode.{scene} > replyMode.default > replyMode (string) > "auto"
  */
-export function resolveReplyMode(params) {
+function resolveReplyMode(params) {
     const { feishuCfg, chatType } = params;
     // streaming 布尔总开关：仅 true 时允许流式，未设置或 false 一律 static
     if (feishuCfg?.streaming !== true)
@@ -39,7 +43,7 @@ export function resolveReplyMode(params) {
  * When streaming === true: group → static, direct → streaming (legacy behavior).
  * When streaming is unset: always static (new default).
  */
-export function expandAutoMode(params) {
+function expandAutoMode(params) {
     const { mode, streaming, chatType } = params;
     if (mode !== 'auto')
         return mode;
@@ -53,7 +57,7 @@ export function expandAutoMode(params) {
  * being rendered inside a Feishu interactive card (fenced code blocks or
  * markdown tables).
  */
-export function shouldUseCard(text) {
+function shouldUseCard(text) {
     // Fenced code blocks
     if (/```[\s\S]*?```/.test(text)) {
         return true;

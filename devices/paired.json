@@ -68,11 +68,11 @@
           "operator.read",
           "operator.write"
         ],
-        "createdAtMs": 1772965495329
+        "createdAtMs": 1772965495329,
+        "lastUsedAtMs": 1774222842184
       }
     },
     "createdAtMs": 1772965495329,
-    "approvedAtMs": 1772965495329,
-    "displayName": "agent"
+    "approvedAtMs": 1772965495329
   }
 }

@@ -8,12 +8,15 @@
  * Handles control commands (/help, /reset, etc.) via plain-text delivery
  * and permission-error notifications via the streaming card flow.
  */
-import { larkLogger } from '../../core/lark-logger';
-import { ticketElapsed } from '../../core/lark-ticket';
-import { createFeishuReplyDispatcher } from '../../card/reply-dispatcher';
-import { sendMessageFeishu } from '../outbound/send';
-import { buildInboundPayload } from './dispatch-builders';
-const log = larkLogger('inbound/dispatch-commands');
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.dispatchPermissionNotification = dispatchPermissionNotification;
+exports.dispatchSystemCommand = dispatchSystemCommand;
+const lark_logger_1 = require("../../core/lark-logger");
+const lark_ticket_1 = require("../../core/lark-ticket");
+const reply_dispatcher_1 = require("../../card/reply-dispatcher");
+const send_1 = require("../outbound/send");
+const dispatch_builders_1 = require("./dispatch-builders");
+const log = (0, lark_logger_1.larkLogger)('inbound/dispatch-commands');
 // ---------------------------------------------------------------------------
 // Permission error notification
 // ---------------------------------------------------------------------------
@@ -21,7 +24,7 @@ const log = larkLogger('inbound/dispatch-commands');
  * Dispatch a permission-error notification to the agent so it can
  * inform the user about the missing Feishu API scope.
  */
-export async function dispatchPermissionNotification(dc, permissionError, replyToMessageId) {
+async function dispatchPermissionNotification(dc, permissionError, replyToMessageId) {
     const grantUrl = permissionError.grantUrl ?? '';
     const permissionNotifyBody = `[System: The bot encountered a Feishu API permission error. Please inform the user about this issue and provide the permission grant URL for the admin to authorize. Permission grant URL: ${grantUrl}]`;
     const permBody = dc.core.channel.reply.formatAgentEnvelope({
@@ -31,7 +34,7 @@ export async function dispatchPermissionNotification(dc, permissionError, replyT
         envelope: dc.envelopeOptions,
         body: permissionNotifyBody,
     });
-    const permCtx = buildInboundPayload(dc, {
+    const permCtx = (0, dispatch_builders_1.buildInboundPayload)(dc, {
         body: permBody,
         bodyForAgent: permissionNotifyBody,
         rawBody: permissionNotifyBody,
@@ -41,7 +44,7 @@ export async function dispatchPermissionNotification(dc, permissionError, replyT
         messageSid: `${dc.ctx.messageId}:permission-error`,
         wasMentioned: false,
     });
-    const { dispatcher: permDispatcher, replyOptions: permReplyOptions, markDispatchIdle: markPermIdle, markFullyComplete: markPermComplete, } = createFeishuReplyDispatcher({
+    const { dispatcher: permDispatcher, replyOptions: permReplyOptions, markDispatchIdle: markPermIdle, markFullyComplete: markPermComplete, } = (0, reply_dispatcher_1.createFeishuReplyDispatcher)({
         cfg: dc.accountScopedCfg,
         agentId: dc.route.agentId,
         chatId: dc.ctx.chatId,
@@ -73,7 +76,7 @@ export async function dispatchPermissionNotification(dc, permissionError, replyT
  * bare /new and /reset commands: the SDK already sends a "done" notice
  * via its own route, so the AI greeting would be redundant.
  */
-export async function dispatchSystemCommand(dc, ctxPayload, suppressReply = false, replyToMessageId) {
+async function dispatchSystemCommand(dc, ctxPayload, suppressReply = false, replyToMessageId) {
     let delivered = false;
     dc.log(`feishu[${dc.account.accountId}]: detected system command, using plain-text dispatch${suppressReply ? ' (reply suppressed)' : ''}`);
     log.info(`system command detected, plain-text dispatch${suppressReply ? ', reply suppressed' : ''}`);
@@ -87,7 +90,7 @@ export async function dispatchSystemCommand(dc, ctxPayload, suppressReply = fals
                 const text = payload.text?.trim() ?? '';
                 if (!text)
                     return;
-                await sendMessageFeishu({
+                await (0, send_1.sendMessageFeishu)({
                     cfg: dc.accountScopedCfg,
                     to: dc.ctx.chatId,
                     text,
@@ -109,5 +112,5 @@ export async function dispatchSystemCommand(dc, ctxPayload, suppressReply = fals
         replyOptions: {},
     });
     dc.log(`feishu[${dc.account.accountId}]: system command dispatched (delivered=${delivered})`);
-    log.info(`system command dispatched (delivered=${delivered}, elapsed=${ticketElapsed()}ms)`);
+    log.info(`system command dispatched (delivered=${delivered}, elapsed=${(0, lark_ticket_1.ticketElapsed)()}ms)`);
 }

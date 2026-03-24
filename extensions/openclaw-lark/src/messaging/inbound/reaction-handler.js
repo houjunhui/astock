@@ -14,16 +14,52 @@
  *   - `"own"`  — only reactions on the bot's own messages are dispatched.
  *   - `"all"`  — reactions on any message in the chat are dispatched.
  */
-import * as crypto from 'node:crypto';
-import { DEFAULT_GROUP_HISTORY_LIMIT } from 'openclaw/plugin-sdk';
-import { getLarkAccount } from '../../core/accounts';
-import { getMessageFeishu } from '../shared/message-lookup';
-import { isThreadCapableGroup, getChatTypeFeishu } from '../../core/chat-info-cache';
-import { resolveUserName } from './user-name-cache';
-import { dispatchToAgent } from './dispatch';
-import { resolveFeishuGroupConfig } from './policy';
-import { larkLogger } from '../../core/lark-logger';
-const logger = larkLogger('inbound/reaction-handler');
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.resolveReactionContext = resolveReactionContext;
+exports.handleFeishuReaction = handleFeishuReaction;
+const crypto = __importStar(require("node:crypto"));
+const plugin_sdk_1 = require("openclaw/plugin-sdk");
+const accounts_1 = require("../../core/accounts");
+const message_lookup_1 = require("../shared/message-lookup");
+const chat_info_cache_1 = require("../../core/chat-info-cache");
+const user_name_cache_1 = require("./user-name-cache");
+const dispatch_1 = require("./dispatch");
+const policy_1 = require("./policy");
+const lark_logger_1 = require("../../core/lark-logger");
+const logger = (0, lark_logger_1.larkLogger)('inbound/reaction-handler');
 const REACTION_VERIFY_TIMEOUT_MS = 3_000;
 /**
  * Pre-resolve reaction context before enqueuing.
@@ -39,10 +75,10 @@ const REACTION_VERIFY_TIMEOUT_MS = 3_000;
  * ensuring the reaction shares the same queue key as normal messages
  * for the same chat.
  */
-export async function resolveReactionContext(params) {
+async function resolveReactionContext(params) {
     const { cfg, event, botOpenId, runtime, accountId } = params;
     const log = runtime?.log ?? ((...args) => logger.info(args.map(String).join(' ')));
-    const account = getLarkAccount(cfg, accountId);
+    const account = (0, accounts_1.getLarkAccount)(cfg, accountId);
     const reactionMode = account.config?.reactionNotifications ?? 'own';
     if (reactionMode === 'off') {
         return null;
@@ -68,18 +104,19 @@ export async function resolveReactionContext(params) {
     }
     // ---- Fetch original message with timeout (fail-closed) ----
     const msg = await Promise.race([
-        getMessageFeishu({ cfg, messageId, accountId }),
+        (0, message_lookup_1.getMessageFeishu)({ cfg, messageId, accountId }),
         new Promise((resolve) => setTimeout(() => resolve(null), REACTION_VERIFY_TIMEOUT_MS)),
     ]).catch(() => null);
     if (!msg) {
         log(`feishu[${accountId}]: reacted message ${messageId} not found or timed out, skipping`);
         return null;
     }
-    // The mget API returns app_id (cli_xxx) as sender.id for bot messages,
-    // not the bot's open_id (ou_xxx). Match against the account's appId.
+    // mget API returns app_id (cli_xxx) as sender.id for bot messages.
     const isBotMessage = msg.senderType === 'app' && msg.senderId === account.appId;
-    if (reactionMode === 'own' && !isBotMessage) {
-        log(`feishu[${accountId}]: reaction on non-bot message ${messageId}, skipping (senderId=${msg.senderId}, senderType=${msg.senderType}, botOpenId=${botOpenId}, appId=${account.appId})`);
+    const isOtherBotMessage = msg.senderType === 'app' && account.appId && msg.senderId !== account.appId;
+    // 'own': only react to this bot's messages; 'all': also skip other bots' messages.
+    if ((reactionMode === 'own' && !isBotMessage) || (reactionMode === 'all' && isOtherBotMessage)) {
+        log(`feishu[${accountId}]: reaction on ${isOtherBotMessage ? 'other bot' : 'non-bot'} message ${messageId}, skipping`);
         return null;
     }
     // ---- Resolve effective chatId ----
@@ -105,7 +142,7 @@ export async function resolveReactionContext(params) {
     // source for reaction events.
     if (rawChatId && chatType === 'p2p' && !event.chat_type && !msg.chatType) {
         try {
-            chatType = await getChatTypeFeishu({ cfg, chatId: rawChatId, accountId });
+            chatType = await (0, chat_info_cache_1.getChatTypeFeishu)({ cfg, chatId: rawChatId, accountId });
         }
         catch {
             // getChatTypeFeishu already logs errors and defaults to "p2p"
@@ -119,7 +156,7 @@ export async function resolveReactionContext(params) {
     let threadCapable = false;
     const threadSessionEnabled = account.config?.threadSession === true;
     if (rawChatId && chatType === 'group') {
-        threadCapable = await isThreadCapableGroup({ cfg, chatId: rawChatId, accountId });
+        threadCapable = await (0, chat_info_cache_1.isThreadCapableGroup)({ cfg, chatId: rawChatId, accountId });
         if (threadSessionEnabled && threadCapable) {
             log(`feishu[${accountId}]: reaction on thread-capable group ${rawChatId}, skipping (threadSession enabled)`);
             return null;
@@ -136,7 +173,7 @@ export async function resolveReactionContext(params) {
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
-export async function handleFeishuReaction(params) {
+async function handleFeishuReaction(params) {
     const { cfg, event, runtime, chatHistories, accountId, preResolved } = params;
     const log = runtime?.log ?? ((...args) => logger.info(args.map(String).join(' ')));
     const error = runtime?.error ?? ((...args) => logger.error(args.map(String).join(' ')));
@@ -144,7 +181,7 @@ export async function handleFeishuReaction(params) {
     const messageId = event.message_id;
     const operatorOpenId = event.user_id?.open_id ?? '';
     // ---- Step A: Account resolution + accountScopedCfg ----
-    const account = getLarkAccount(cfg, accountId);
+    const account = (0, accounts_1.getLarkAccount)(cfg, accountId);
     const accountFeishuCfg = account.config;
     const accountScopedCfg = {
         ...cfg,
@@ -185,7 +222,7 @@ export async function handleFeishuReaction(params) {
         },
     };
     // ---- Step C: Sender name resolution ----
-    const senderResult = await resolveUserName({ account, openId: operatorOpenId, log });
+    const senderResult = await (0, user_name_cache_1.resolveUserName)({ account, openId: operatorOpenId, log });
     if (senderResult.name) {
         ctx = { ...ctx, senderName: senderResult.name };
     }
@@ -193,12 +230,12 @@ export async function handleFeishuReaction(params) {
     logger.info(`reaction "${emojiType}" by ${operatorOpenId} on ${messageId} (chatType=${preResolved.chatType})`);
     // ---- Step D: Group config resolution ----
     const isGroup = ctx.chatType === 'group';
-    const groupConfig = isGroup ? resolveFeishuGroupConfig({ cfg: accountFeishuCfg, groupId: ctx.chatId }) : undefined;
+    const groupConfig = isGroup ? (0, policy_1.resolveFeishuGroupConfig)({ cfg: accountFeishuCfg, groupId: ctx.chatId }) : undefined;
     const defaultGroupConfig = isGroup ? accountFeishuCfg?.groups?.['*'] : undefined;
-    const historyLimit = Math.max(0, accountFeishuCfg?.historyLimit ?? accountScopedCfg.messages?.groupChat?.historyLimit ?? DEFAULT_GROUP_HISTORY_LIMIT);
+    const historyLimit = Math.max(0, accountFeishuCfg?.historyLimit ?? accountScopedCfg.messages?.groupChat?.historyLimit ?? plugin_sdk_1.DEFAULT_GROUP_HISTORY_LIMIT);
     // ---- Step E: Dispatch directly to agent ----
     try {
-        await dispatchToAgent({
+        await (0, dispatch_1.dispatchToAgent)({
             ctx,
             permissionError: undefined,
             mediaPayload: {},

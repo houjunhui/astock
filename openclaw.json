@@ -1,7 +1,7 @@
 {
   "meta": {
     "lastTouchedVersion": "2026.3.8",
-    "lastTouchedAt": "2026-03-12T03:34:40.628Z"
+    "lastTouchedAt": "2026-03-23T00:04:34.109Z"
   },
   "wizard": {
     "lastRunAt": "2026-03-05T11:15:21.053Z",
@@ -9,8 +9,30 @@
     "lastRunCommand": "onboard",
     "lastRunMode": "local"
   },
+  "update": {
+    "checkOnStart": false
+  },
+  "browser": {
+    "enabled": true,
+    "color": "#00AA00",
+    "executablePath": "/usr/bin/chromium-browser",
+    "headless": true,
+    "noSandbox": true,
+    "defaultProfile": "openclaw",
+    "extraArgs": [
+      "--window-size=1920,1080",
+      "--test-type",
+      "--disable-gpu",
+      "--no-sandbox"
+    ]
+  },
   "secrets": {
     "providers": {
+      "minimax-provider": {
+        "source": "file",
+        "path": "/home/gem/workspace/agent/secrets/minimax-api-key",
+        "mode": "singleValue"
+      },
       "miaoda-provider": {
         "source": "file",
         "path": "/home/gem/workspace/.force/openclaw/miaoda-provider-key",
@@ -25,6 +47,33 @@
   },
   "models": {
     "providers": {
+      "minimax": {
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "apiKey": {
+          "source": "file",
+          "provider": "minimax-provider",
+          "id": "value"
+        },
+        "api": "anthropic-messages",
+        "models": [
+          {
+            "id": "MiniMax-M2.7",
+            "name": "MiniMax M2.7",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      },
       "miaoda": {
         "baseUrl": "https://innerapi.aiforce.cloud/innerapi/api/v1/sgw/model/proxy",
         "apiKey": {
@@ -96,12 +145,14 @@
   },
   "agents": {
     "defaults": {
-      "verboseDefault": "off",
       "model": {
-        "primary": "miaoda/miaoda-model-auto"
+        "primary": "minimax/MiniMax-M2.7"
       },
       "imageModel": "miaoda/miaoda-auto-multimodal",
       "models": {
+        "minimax/MiniMax-M2.7": {
+          "alias": "MiniMax M2.7"
+        },
         "miaoda/miaoda-model-auto": {
           "alias": "Miaoda Auto"
         },
@@ -117,25 +168,26 @@
         "mode": "safeguard",
         "reserveTokensFloor": 50000
       },
-      "maxConcurrent": 4,
-      "subagents": {
-        "maxConcurrent": 8
+      "verboseDefault": "off",
+      "blockStreamingCoalesce": {
+        "minChars": 20,
+        "maxChars": 800,
+        "idleMs": 300
       },
       "humanDelay": {
         "mode": "off"
       },
-      "blockStreamingCoalesce": {
-        "idleMs": 300,
-        "minChars": 20,
-        "maxChars": 800
-      },
       "heartbeat": {
-        "activeHours": {
-          "end": "22:00",
-          "start": "08:00"
-        },
         "every": "4h",
+        "activeHours": {
+          "start": "08:00",
+          "end": "22:00"
+        },
         "model": "miaoda/miaoda-model-flash"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
       }
     }
   },
@@ -161,20 +213,6 @@
     "sessions": {
       "visibility": "all"
     }
-  },
-  "browser": {
-    "enabled": true,
-    "color": "#00AA00",
-    "executablePath": "/usr/bin/chromium-browser",
-    "headless": true,
-    "noSandbox": true,
-    "defaultProfile": "openclaw",
-    "extraArgs": [
-      "--window-size=1920,1080",
-      "--test-type",
-      "--disable-gpu",
-      "--no-sandbox"
-    ]
   },
   "messages": {
     "ackReactionScope": "group-mentions"
@@ -218,6 +256,9 @@
         "elapsed": false,
         "status": false
       }
+    },
+    "openclaw-weixin": {
+      "enabled": true
     }
   },
   "discovery": {
@@ -230,10 +271,10 @@
     "mode": "local",
     "bind": "loopback",
     "controlUi": {
-      "dangerouslyDisableDeviceAuth": true,
       "allowedOrigins": [
         "https://ncnsyxaeav0n-app_4js8u2dm4s9up-1860348804483111.aiforce.run"
-      ]
+      ],
+      "dangerouslyDisableDeviceAuth": true
     },
     "auth": {
       "mode": "token",
@@ -257,55 +298,131 @@
       "nodeManager": "npm"
     },
     "entries": {
-      "1password": { "enabled": false },
-      "apple-notes": { "enabled": false },
-      "apple-reminders": { "enabled": false },
-      "bear-notes": { "enabled": false },
-      "bluebubbles": { "enabled": false },
-      "blucli": { "enabled": false },
-      "camsnap": { "enabled": false },
-      "coding-agent": { "enabled": false },
-      "discord": { "enabled": false },
-      "eightctl": { "enabled": false },
-      "gemini": { "enabled": false },
-      "gifgrep": { "enabled": false },
-      "gog": { "enabled": false },
-      "goplaces": { "enabled": false },
-      "imsg": { "enabled": false },
-      "model-usage": { "enabled": false },
-      "nano-banana-pro": { "enabled": false },
-      "notion": { "enabled": false },
-      "openai-image-gen": { "enabled": false },
-      "openai-whisper": { "enabled": false },
-      "openai-whisper-api": { "enabled": false },
-      "openhue": { "enabled": false },
-      "oracle": { "enabled": false },
-      "ordercli": { "enabled": false },
-      "peekaboo": { "enabled": false },
-      "sag": { "enabled": false },
-      "slack": { "enabled": false },
-      "sonoscli": { "enabled": false },
-      "spotify-player": { "enabled": false },
-      "summarize": { "enabled": false },
-      "things-mac": { "enabled": false },
-      "trello": { "enabled": false },
-      "voice-call": { "enabled": false },
-      "wacli": { "enabled": false },
-      "xurl": { "enabled": false },
-      "feishu-task": { "enabled": false },
-      "gh-issues": { "enabled": false },
-      "github": { "enabled": false },
-      "tmux": { "enabled": false }
+      "1password": {
+        "enabled": false
+      },
+      "apple-notes": {
+        "enabled": false
+      },
+      "apple-reminders": {
+        "enabled": false
+      },
+      "bear-notes": {
+        "enabled": false
+      },
+      "bluebubbles": {
+        "enabled": false
+      },
+      "blucli": {
+        "enabled": false
+      },
+      "camsnap": {
+        "enabled": false
+      },
+      "coding-agent": {
+        "enabled": false
+      },
+      "discord": {
+        "enabled": false
+      },
+      "eightctl": {
+        "enabled": false
+      },
+      "gemini": {
+        "enabled": false
+      },
+      "gifgrep": {
+        "enabled": false
+      },
+      "gog": {
+        "enabled": false
+      },
+      "goplaces": {
+        "enabled": false
+      },
+      "imsg": {
+        "enabled": false
+      },
+      "model-usage": {
+        "enabled": false
+      },
+      "nano-banana-pro": {
+        "enabled": false
+      },
+      "notion": {
+        "enabled": false
+      },
+      "openai-image-gen": {
+        "enabled": false
+      },
+      "openai-whisper": {
+        "enabled": false
+      },
+      "openai-whisper-api": {
+        "enabled": false
+      },
+      "openhue": {
+        "enabled": false
+      },
+      "oracle": {
+        "enabled": false
+      },
+      "ordercli": {
+        "enabled": false
+      },
+      "peekaboo": {
+        "enabled": false
+      },
+      "sag": {
+        "enabled": false
+      },
+      "slack": {
+        "enabled": false
+      },
+      "sonoscli": {
+        "enabled": false
+      },
+      "spotify-player": {
+        "enabled": false
+      },
+      "summarize": {
+        "enabled": false
+      },
+      "things-mac": {
+        "enabled": false
+      },
+      "trello": {
+        "enabled": false
+      },
+      "voice-call": {
+        "enabled": false
+      },
+      "wacli": {
+        "enabled": false
+      },
+      "xurl": {
+        "enabled": false
+      },
+      "feishu-task": {
+        "enabled": false
+      },
+      "gh-issues": {
+        "enabled": false
+      },
+      "github": {
+        "enabled": false
+      },
+      "tmux": {
+        "enabled": false
+      }
     }
-  },
-  "update": {
-    "checkOnStart": false
   },
   "plugins": {
     "allow": [
       "openclaw-lark",
       "feishu-greeting",
-      "miaoda-keepalive"
+      "miaoda-keepalive",
+      "openclaw-weixin"
     ],
     "entries": {
       "feishu": {
@@ -318,27 +435,32 @@
         "enabled": true,
         "config": {
           "message": "👋 Hi，我是**malow的OpenClaw**，一只生活在飞书里的 🦞 小龙虾，打个招呼，我们开始认识一下？",
-          "targets": ["ou_12d595ebce7c7b73e926034c562b59d0"]
+          "targets": [
+            "ou_12d595ebce7c7b73e926034c562b59d0"
+          ]
         }
       },
       "miaoda-keepalive": {
         "enabled": true,
         "config": {}
+      },
+      "openclaw-weixin": {
+        "enabled": true
       }
     },
     "installs": {
       "openclaw-lark": {
         "source": "npm",
         "spec": "@larksuite/openclaw-lark",
-        "installPath": "./extensions/openclaw-lark",
-        "version": "2026.3.12",
+        "installPath": "/home/gem/workspace/agent/extensions/openclaw-lark",
+        "version": "2026.3.18",
         "resolvedName": "@larksuite/openclaw-lark",
-        "resolvedVersion": "2026.3.12",
-        "resolvedSpec": "@larksuite/openclaw-lark@2026.3.12",
-        "integrity": "sha512-5XCPcEch2Bab2g284odCkxRCaRMerBezy9Qc6eUfnsO4HvLrqxR406DefTn1mr/ibPVNa3sGxKvjTg3rFXM4mg==",
-        "shasum": "2ce8efc9bb8814aaa5d6019d2eee4ed856712756",
-        "resolvedAt": "2026-03-12T03:34:30.017Z",
-        "installedAt": "2026-03-12T03:34:36.726Z"
+        "resolvedVersion": "2026.3.18",
+        "resolvedSpec": "@larksuite/openclaw-lark@2026.3.18",
+        "integrity": "sha512-9qqO0a1HQ+2E9jvob/13jf1ZDfe39vzr7SgYFgtNc/ajv+jFaC7sweONyPZbiQ22CF+lIWb4FvSve74ev0Irnw==",
+        "shasum": "5358c445b0fcfc65e99462b2a15c755bf39919f8",
+        "resolvedAt": "2026-03-22T10:09:50.802Z",
+        "installedAt": "2026-03-22T10:10:13.224Z"
       },
       "feishu-greeting": {
         "source": "path",
@@ -347,6 +469,19 @@
       "miaoda-keepalive": {
         "source": "path",
         "installPath": "./extensions/miaoda-keepalive"
+      },
+      "openclaw-weixin": {
+        "source": "npm",
+        "spec": "@tencent-weixin/openclaw-weixin",
+        "installPath": "/home/gem/workspace/agent/extensions/openclaw-weixin",
+        "version": "1.0.2",
+        "resolvedName": "@tencent-weixin/openclaw-weixin",
+        "resolvedVersion": "1.0.2",
+        "resolvedSpec": "@tencent-weixin/openclaw-weixin@1.0.2",
+        "integrity": "sha512-kYPEowHB/0VWt9nQFee/AS6Fb+jbnu38wjkgZDBdKTuJoBL0IBW2obQ0ymgFKBFJJL9rDwnFrb/17ORGZD/X8Q==",
+        "shasum": "244baf0a873683a9c350d0f0b5bc055c07b0eb39",
+        "resolvedAt": "2026-03-22T23:54:05.865Z",
+        "installedAt": "2026-03-22T23:54:18.405Z"
       }
     }
   }

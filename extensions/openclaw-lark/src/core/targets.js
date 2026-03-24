@@ -13,6 +13,15 @@
  * This module provides helpers to detect, normalise, and format these IDs
  * for both internal routing and outbound Feishu API calls.
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.detectIdType = detectIdType;
+exports.normalizeFeishuTarget = normalizeFeishuTarget;
+exports.parseFeishuRouteTarget = parseFeishuRouteTarget;
+exports.encodeFeishuRouteTarget = encodeFeishuRouteTarget;
+exports.formatFeishuTarget = formatFeishuTarget;
+exports.resolveReceiveIdType = resolveReceiveIdType;
+exports.normalizeMessageId = normalizeMessageId;
+exports.looksLikeFeishuId = looksLikeFeishuId;
 // ---------------------------------------------------------------------------
 // Known prefix patterns
 // ---------------------------------------------------------------------------
@@ -24,6 +33,8 @@ const TAG_USER = 'user:';
 const TAG_OPEN_ID = 'open_id:';
 // Feishu channel prefix (used by SDK for some routing scenarios).
 const TAG_FEISHU = 'feishu:';
+const ROUTE_META_FRAGMENT_REPLY_TO = '__feishu_reply_to';
+const ROUTE_META_FRAGMENT_THREAD_ID = '__feishu_thread_id';
 // ---------------------------------------------------------------------------
 // Detection
 // ---------------------------------------------------------------------------
@@ -32,7 +43,7 @@ const TAG_FEISHU = 'feishu:';
  *
  * Returns `null` when the string does not match any known pattern.
  */
-export function detectIdType(id) {
+function detectIdType(id) {
     if (!id)
         return null;
     if (id.startsWith(CHAT_PREFIX))
@@ -53,10 +64,10 @@ export function detectIdType(id) {
  *
  * Returns `null` when the input is empty or falsy.
  */
-export function normalizeFeishuTarget(raw) {
+function normalizeFeishuTarget(raw) {
     if (!raw)
         return null;
-    const trimmed = raw.trim();
+    const trimmed = parseFeishuRouteTarget(raw).target.trim();
     if (!trimmed)
         return null;
     // Handle Feishu channel prefix (e.g., "feishu:ou_xxx" -> "ou_xxx")
@@ -73,6 +84,41 @@ export function normalizeFeishuTarget(raw) {
         return trimmed.slice(TAG_OPEN_ID.length);
     return trimmed;
 }
+function parseFeishuRouteTarget(raw) {
+    const trimmed = raw.trim();
+    if (!trimmed)
+        return { target: '' };
+    const hashIndex = trimmed.indexOf('#');
+    if (hashIndex < 0)
+        return { target: trimmed };
+    const target = trimmed.slice(0, hashIndex).trim();
+    const fragment = trimmed.slice(hashIndex + 1).trim();
+    if (!fragment)
+        return { target };
+    const params = new URLSearchParams(fragment);
+    const replyToMessageId = normalizeMessageId(params.get(ROUTE_META_FRAGMENT_REPLY_TO)?.trim() || undefined);
+    const threadId = params.get(ROUTE_META_FRAGMENT_THREAD_ID)?.trim() || undefined;
+    return {
+        target,
+        ...(replyToMessageId ? { replyToMessageId } : {}),
+        ...(threadId ? { threadId } : {}),
+    };
+}
+function encodeFeishuRouteTarget(params) {
+    const target = params.target.trim();
+    if (!target)
+        return target;
+    const replyToMessageId = normalizeMessageId(params.replyToMessageId?.trim() || undefined);
+    const threadId = params.threadId != null && String(params.threadId).trim() !== '' ? String(params.threadId).trim() : undefined;
+    if (!replyToMessageId && !threadId)
+        return target;
+    const fragment = new URLSearchParams();
+    if (replyToMessageId)
+        fragment.set(ROUTE_META_FRAGMENT_REPLY_TO, replyToMessageId);
+    if (threadId)
+        fragment.set(ROUTE_META_FRAGMENT_THREAD_ID, threadId);
+    return `${target}#${fragment.toString()}`;
+}
 // ---------------------------------------------------------------------------
 // Formatting
 // ---------------------------------------------------------------------------
@@ -81,7 +127,7 @@ export function normalizeFeishuTarget(raw) {
  *
  * When `type` is omitted, the prefix is inferred via `detectIdType`.
  */
-export function formatFeishuTarget(id, type) {
+function formatFeishuTarget(id, type) {
     const resolved = type ?? detectIdType(id);
     if (resolved === 'chat_id')
         return `${TAG_CHAT}${id}`;
@@ -94,7 +140,7 @@ export function formatFeishuTarget(id, type) {
  * Determine the `receive_id_type` query parameter for the Feishu send-message
  * API based on the target identifier.
  */
-export function resolveReceiveIdType(id) {
+function resolveReceiveIdType(id) {
     if (id.startsWith(CHAT_PREFIX))
         return 'chat_id';
     if (id.startsWith(OPEN_ID_PREFIX))
@@ -102,7 +148,7 @@ export function resolveReceiveIdType(id) {
     // Default to open_id for any other pattern (safer for outbound API calls).
     return 'open_id';
 }
-export function normalizeMessageId(messageId) {
+function normalizeMessageId(messageId) {
     if (!messageId)
         return undefined;
     const colonIndex = messageId.indexOf(':');
@@ -117,7 +163,7 @@ export function normalizeMessageId(messageId) {
  * Return `true` when a raw string looks like it could be a Feishu target
  * (either an OpenClaw-tagged form or a native prefix).
  */
-export function looksLikeFeishuId(raw) {
+function looksLikeFeishuId(raw) {
     if (!raw)
         return false;
     return (raw.startsWith(TAG_CHAT) ||

@@ -1,0 +1,778 @@
+[
+  {
+    "code": "000020",
+    "name": "深华发Ａ",
+    "current_boards": 5,
+    "expected_boards": 5.0,
+    "max_prob_board": 5,
+    "prob_reach_N": {
+      "5": 100.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "RSI极度超买(90) -50%",
+      "股价在MA20上方 +15%",
+      "妖股RSI>90极端风险 -70%"
+    ],
+    "signal": "⚠️ 可能在5板结束",
+    "trend": "上升通道",
+    "rsi": 90.3,
+    "vol_ratio": 1.44,
+    "macd": "多头",
+    "lb_count": 5,
+    "industry": ""
+  },
+  {
+    "code": "600396",
+    "name": "华电辽能",
+    "current_boards": 5,
+    "expected_boards": 5.0,
+    "max_prob_board": 5,
+    "prob_reach_N": {
+      "5": 100.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0,
+      "9": 0.0,
+      "10": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "爆量 -40%",
+      "RSI极度超买(92) -50%",
+      "股价在MA20上方 +15%",
+      "妖股爆量=出货 -60%",
+      "妖股RSI>90极端风险 -70%"
+    ],
+    "signal": "⚠️ 可能在5板结束",
+    "trend": "上升通道",
+    "rsi": 91.6,
+    "vol_ratio": 3.62,
+    "macd": "多头",
+    "lb_count": 5,
+    "industry": ""
+  },
+  {
+    "code": "603687",
+    "name": "大胜达",
+    "current_boards": 3,
+    "expected_boards": 3.5,
+    "max_prob_board": 3,
+    "prob_reach_N": {
+      "3": 58.9,
+      "4": 28.0,
+      "5": 13.1,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "极度缩量 +40%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在3板结束",
+    "trend": "震荡",
+    "rsi": 74.1,
+    "vol_ratio": 0.32,
+    "macd": "多头",
+    "lb_count": 3,
+    "industry": ""
+  },
+  {
+    "code": "000601",
+    "name": "韶能股份",
+    "current_boards": 3,
+    "expected_boards": 3.3,
+    "max_prob_board": 3,
+    "prob_reach_N": {
+      "3": 72.3,
+      "4": 20.9,
+      "5": 6.8,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "RSI超买(76) -25%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在3板结束",
+    "trend": "上升通道",
+    "rsi": 75.6,
+    "vol_ratio": 1.19,
+    "macd": "多头",
+    "lb_count": 3,
+    "industry": ""
+  },
+  {
+    "code": "600617",
+    "name": "国新能源",
+    "current_boards": 2,
+    "expected_boards": 2.4,
+    "max_prob_board": 2,
+    "prob_reach_N": {
+      "2": 70.8,
+      "3": 20.5,
+      "4": 6.1,
+      "5": 2.7,
+      "6": 0.0,
+      "7": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在2板结束",
+    "trend": "上升通道",
+    "rsi": 65.7,
+    "vol_ratio": 2.13,
+    "macd": "多头",
+    "lb_count": 2,
+    "industry": ""
+  },
+  {
+    "code": "600726",
+    "name": "华电能源",
+    "current_boards": 2,
+    "expected_boards": 2.2,
+    "max_prob_board": 2,
+    "prob_reach_N": {
+      "2": 87.0,
+      "3": 11.0,
+      "4": 1.6,
+      "5": 0.4,
+      "6": 0.0,
+      "7": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "RSI极度超买(95) -50%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在2板结束",
+    "trend": "上升通道",
+    "rsi": 95.2,
+    "vol_ratio": 2.52,
+    "macd": "多头",
+    "lb_count": 2,
+    "industry": ""
+  },
+  {
+    "code": "002310",
+    "name": "东方新能",
+    "current_boards": 2,
+    "expected_boards": 2.1,
+    "max_prob_board": 2,
+    "prob_reach_N": {
+      "2": 92.6,
+      "3": 6.7,
+      "4": 0.6,
+      "5": 0.1,
+      "6": 0.0,
+      "7": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "爆量 -40%",
+      "RSI极度超买(86) -50%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在2板结束",
+    "trend": "上升通道",
+    "rsi": 85.8,
+    "vol_ratio": 3.38,
+    "macd": "多头",
+    "lb_count": 2,
+    "industry": ""
+  },
+  {
+    "code": "002428",
+    "name": "云南锗业",
+    "current_boards": 1,
+    "expected_boards": 1.4,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 73.6,
+      "2": 19.5,
+      "3": 4.7,
+      "4": 1.5,
+      "5": 0.7,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "极度缩量 +40%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "震荡",
+    "rsi": 44.2,
+    "vol_ratio": 0.31,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "000677",
+    "name": "恒天海龙",
+    "current_boards": 1,
+    "expected_boards": 1.3,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 75.8,
+      "2": 18.3,
+      "3": 4.1,
+      "4": 1.2,
+      "5": 0.5,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 68.7,
+    "vol_ratio": 1.05,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603538",
+    "name": "美诺华",
+    "current_boards": 1,
+    "expected_boards": 1.3,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 75.8,
+      "2": 18.3,
+      "3": 4.1,
+      "4": 1.2,
+      "5": 0.5,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 72.9,
+    "vol_ratio": 2.25,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "002256",
+    "name": "兆新股份",
+    "current_boards": 1,
+    "expected_boards": 1.3,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 75.8,
+      "2": 18.3,
+      "3": 4.1,
+      "4": 1.2,
+      "5": 0.5,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 71.8,
+    "vol_ratio": 2.01,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "002309",
+    "name": "中利集团",
+    "current_boards": 1,
+    "expected_boards": 1.3,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 75.8,
+      "2": 18.3,
+      "3": 4.1,
+      "4": 1.2,
+      "5": 0.5,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 74.2,
+    "vol_ratio": 1.35,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "002150",
+    "name": "正泰电源",
+    "current_boards": 1,
+    "expected_boards": 1.3,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 75.8,
+      "2": 18.3,
+      "3": 4.1,
+      "4": 1.2,
+      "5": 0.5,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 69.1,
+    "vol_ratio": 1.18,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603026",
+    "name": "石大胜华",
+    "current_boards": 1,
+    "expected_boards": 1.3,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 75.8,
+      "2": 18.3,
+      "3": 4.1,
+      "4": 1.2,
+      "5": 0.5,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 66.1,
+    "vol_ratio": 1.55,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "600683",
+    "name": "京投发展",
+    "current_boards": 1,
+    "expected_boards": 1.2,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 82.8,
+      "2": 14.1,
+      "3": 2.4,
+      "4": 0.5,
+      "5": 0.2,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "RSI超买(84) -25%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 84.5,
+    "vol_ratio": 1.15,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "000509",
+    "name": "华塑控股",
+    "current_boards": 1,
+    "expected_boards": 1.2,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 82.8,
+      "2": 14.1,
+      "3": 2.4,
+      "4": 0.5,
+      "5": 0.2,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "RSI超买(80) -25%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 79.7,
+    "vol_ratio": 1.37,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603165",
+    "name": "荣晟环保",
+    "current_boards": 1,
+    "expected_boards": 1.2,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 82.3,
+      "2": 14.5,
+      "3": 2.5,
+      "4": 0.6,
+      "5": 0.2,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "震荡",
+    "rsi": 57.1,
+    "vol_ratio": 2.29,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "605299",
+    "name": "舒华体育",
+    "current_boards": 1,
+    "expected_boards": 1.2,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 82.8,
+      "2": 14.1,
+      "3": 2.4,
+      "4": 0.5,
+      "5": 0.2,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "RSI超买(79) -25%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 78.9,
+    "vol_ratio": 2.43,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "000862",
+    "name": "银星能源",
+    "current_boards": 1,
+    "expected_boards": 1.2,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 82.3,
+      "2": 14.5,
+      "3": 2.5,
+      "4": 0.6,
+      "5": 0.2,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "震荡",
+    "rsi": 69.2,
+    "vol_ratio": 1.68,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "301658",
+    "name": "首航新能",
+    "current_boards": 1,
+    "expected_boards": 1.2,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 82.8,
+      "2": 14.1,
+      "3": 2.4,
+      "4": 0.5,
+      "5": 0.2,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "RSI超买(79) -25%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 78.7,
+    "vol_ratio": 1.57,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603778",
+    "name": "国晟科技",
+    "current_boards": 1,
+    "expected_boards": 1.2,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 82.8,
+      "2": 14.1,
+      "3": 2.4,
+      "4": 0.5,
+      "5": 0.2,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "RSI超买(76) -25%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 76.3,
+    "vol_ratio": 1.46,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "600310",
+    "name": "广西能源",
+    "current_boards": 1,
+    "expected_boards": 1.1,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 90.3,
+      "2": 8.7,
+      "3": 0.9,
+      "4": 0.1,
+      "5": 0.0,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "上升通道 +30%",
+      "爆量 -40%",
+      "RSI超买(75) -25%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "上升通道",
+    "rsi": 75.0,
+    "vol_ratio": 4.15,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "605050",
+    "name": "福然德",
+    "current_boards": 1,
+    "expected_boards": 1.1,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 93.3,
+      "2": 6.2,
+      "3": 0.5,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "爆量 -40%",
+      "MACD空头 -30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "震荡",
+    "rsi": 58.5,
+    "vol_ratio": 6.57,
+    "macd": "空头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "300827",
+    "name": "上能电气",
+    "current_boards": 1,
+    "expected_boards": 1.1,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 90.1,
+      "2": 8.9,
+      "3": 0.9,
+      "4": 0.1,
+      "5": 0.0,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "爆量 -40%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "震荡",
+    "rsi": 70.9,
+    "vol_ratio": 3.74,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603381",
+    "name": "永臻股份",
+    "current_boards": 1,
+    "expected_boards": 1.1,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 91.9,
+      "2": 7.4,
+      "3": 0.6,
+      "4": 0.1,
+      "5": 0.0,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "下降通道 -50%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "下降通道",
+    "rsi": 52.4,
+    "vol_ratio": 1.78,
+    "macd": "多头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "600604",
+    "name": "市北高新",
+    "current_boards": 1,
+    "expected_boards": 1.1,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 93.3,
+      "2": 6.2,
+      "3": 0.5,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "爆量 -40%",
+      "MACD空头 -30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "震荡",
+    "rsi": 64.2,
+    "vol_ratio": 5.97,
+    "macd": "空头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "605099",
+    "name": "共创草坪",
+    "current_boards": 1,
+    "expected_boards": 1.0,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 96.7,
+      "2": 3.2,
+      "3": 0.1,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "下降通道 -50%",
+      "MACD空头 -30%",
+      "股价在MA20下方 -30%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "下降通道",
+    "rsi": 41.1,
+    "vol_ratio": 1.84,
+    "macd": "空头",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "001283",
+    "name": "豪鹏科技",
+    "current_boards": 1,
+    "expected_boards": 1.0,
+    "max_prob_board": 1,
+    "prob_reach_N": {
+      "1": 96.7,
+      "2": 3.1,
+      "3": 0.1,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+    },
+    "confidence": "中",
+    "factors": [
+      "下降通道 -50%",
+      "爆量 -40%",
+      "MACD空头 -30%",
+      "股价在MA20上方 +15%"
+    ],
+    "signal": "⚠️ 可能在1板结束",
+    "trend": "下降通道",
+    "rsi": 55.6,
+    "vol_ratio": 4.44,
+    "macd": "空头",
+    "lb_count": 1,
+    "industry": ""
+  }
+]

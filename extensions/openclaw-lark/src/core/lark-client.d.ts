@@ -66,7 +66,7 @@ export declare class LarkClient {
      * With `accountId` — dispose that single instance.
      * Without — dispose every cached instance and clear the cache.
      */
-    static clearCache(accountId?: string): void;
+    static clearCache(accountId?: string): Promise<void>;
     /** Lazily-created Lark SDK client. */
     get sdk(): Lark.Client;
     /**

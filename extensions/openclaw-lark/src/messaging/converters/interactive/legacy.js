@@ -5,7 +5,9 @@
  *
  * Legacy card converter for non-raw_card_content format.
  */
-export function convertLegacyCard(parsed) {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.convertLegacyCard = convertLegacyCard;
+function convertLegacyCard(parsed) {
     const texts = [];
     const header = parsed.header;
     if (header) {

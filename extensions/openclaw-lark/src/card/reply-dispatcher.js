@@ -11,31 +11,35 @@
  * 3. In static mode, delivers via sendMessageFeishu / sendMarkdownCardFeishu
  * 4. Assembles and returns FeishuReplyDispatcherResult
  */
-import { createReplyPrefixContext, createTypingCallbacks, logTypingFailure, } from 'openclaw/plugin-sdk';
-import { getLarkAccount } from '../core/accounts';
-import { resolveFooterConfig } from '../core/footer-config';
-import { LarkClient } from '../core/lark-client';
-import { larkLogger } from '../core/lark-logger';
-import { sendMessageFeishu, sendMarkdownCardFeishu } from '../messaging/outbound/send';
-import { addTypingIndicator, removeTypingIndicator } from '../messaging/outbound/typing';
-import { resolveReplyMode, expandAutoMode, shouldUseCard } from './reply-mode';
-import { StreamingCardController } from './streaming-card-controller';
-import { UnavailableGuard } from './unavailable-guard';
-const log = larkLogger('card/reply-dispatcher');
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createFeishuReplyDispatcher = createFeishuReplyDispatcher;
+const plugin_sdk_1 = require("openclaw/plugin-sdk");
+const accounts_1 = require("../core/accounts");
+const footer_config_1 = require("../core/footer-config");
+const lark_client_1 = require("../core/lark-client");
+const lark_logger_1 = require("../core/lark-logger");
+const send_1 = require("../messaging/outbound/send");
+const typing_1 = require("../messaging/outbound/typing");
+const reply_mode_1 = require("./reply-mode");
+const streaming_card_controller_1 = require("./streaming-card-controller");
+const unavailable_guard_1 = require("./unavailable-guard");
+const deliver_1 = require("../messaging/outbound/deliver");
+const log = (0, lark_logger_1.larkLogger)('card/reply-dispatcher');
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
-export function createFeishuReplyDispatcher(params) {
-    const core = LarkClient.runtime;
+function createFeishuReplyDispatcher(params) {
+    const core = lark_client_1.LarkClient.runtime;
     const { cfg, agentId, chatId, replyToMessageId, accountId, replyInThread } = params;
     // Resolve account so we can read per-account config (e.g. replyMode)
-    const account = getLarkAccount(cfg, accountId);
+    const account = (0, accounts_1.getLarkAccount)(cfg, accountId);
     const feishuCfg = account.config;
-    const prefixContext = createReplyPrefixContext({ cfg, agentId });
+    const accountScopedCfg = (0, accounts_1.createAccountScopedConfig)(cfg, account.accountId);
+    const prefixContext = (0, plugin_sdk_1.createReplyPrefixContext)({ cfg, agentId });
     // ---- Reply mode resolution ----
     const chatType = params.chatType;
-    const effectiveReplyMode = resolveReplyMode({ feishuCfg, chatType });
-    const replyMode = expandAutoMode({
+    const effectiveReplyMode = (0, reply_mode_1.resolveReplyMode)({ feishuCfg, chatType });
+    const replyMode = (0, reply_mode_1.expandAutoMode)({
         mode: effectiveReplyMode,
         streaming: feishuCfg?.streaming,
         chatType,
@@ -43,7 +47,7 @@ export function createFeishuReplyDispatcher(params) {
     const useStreamingCards = replyMode === 'streaming';
     // ---- Block streaming for static mode ----
     const enableBlockStreaming = feishuCfg?.blockStreaming === true && !useStreamingCards;
-    const resolvedFooter = resolveFooterConfig(feishuCfg?.footer);
+    const resolvedFooter = (0, footer_config_1.resolveFooterConfig)(feishuCfg?.footer);
     log.info('reply mode resolved', {
         effectiveReplyMode,
         replyMode,
@@ -53,12 +57,12 @@ export function createFeishuReplyDispatcher(params) {
     const textChunkLimit = core.channel.text.resolveTextChunkLimit(cfg, 'feishu', accountId, { fallbackLimit: 4000 });
     const chunkMode = core.channel.text.resolveChunkMode(cfg, 'feishu');
     const tableMode = core.channel.text.resolveMarkdownTableMode({
-        cfg,
+        cfg: accountScopedCfg,
         channel: 'feishu',
     });
     // ---- Streaming card controller (instantiated only when needed) ----
     const controller = useStreamingCards
-        ? new StreamingCardController({
+        ? new streaming_card_controller_1.StreamingCardController({
             cfg,
             accountId,
             chatId,
@@ -73,7 +77,7 @@ export function createFeishuReplyDispatcher(params) {
     let staticAborted = false;
     const staticGuard = controller
         ? null
-        : new UnavailableGuard({
+        : new unavailable_guard_1.UnavailableGuard({
             replyToMessageId,
             getCardMessageId: () => null,
             onTerminate: () => {
@@ -93,7 +97,7 @@ export function createFeishuReplyDispatcher(params) {
     // ---- Typing indicator (reaction-based) ----
     let typingState = null;
     let typingStopped = false;
-    const typingCallbacks = createTypingCallbacks({
+    const typingCallbacks = (0, plugin_sdk_1.createTypingCallbacks)({
         keepaliveIntervalMs: 0,
         start: async () => {
             if (shouldSkip('typing.start.precheck'))
@@ -102,7 +106,7 @@ export function createFeishuReplyDispatcher(params) {
                 return;
             if (typingState?.reactionId)
                 return;
-            typingState = await addTypingIndicator({
+            typingState = await (0, typing_1.addTypingIndicator)({
                 cfg,
                 messageId: replyToMessageId,
                 accountId,
@@ -110,7 +114,7 @@ export function createFeishuReplyDispatcher(params) {
             if (shouldSkip('typing.start.postcheck'))
                 return;
             if (typingStopped && typingState) {
-                await removeTypingIndicator({ cfg, state: typingState, accountId });
+                await (0, typing_1.removeTypingIndicator)({ cfg, state: typingState, accountId });
                 typingState = null;
                 log.info('removed typing indicator (raced with stop)');
                 return;
@@ -121,12 +125,12 @@ export function createFeishuReplyDispatcher(params) {
             typingStopped = true;
             if (!typingState)
                 return;
-            await removeTypingIndicator({ cfg, state: typingState, accountId });
+            await (0, typing_1.removeTypingIndicator)({ cfg, state: typingState, accountId });
             typingState = null;
             log.info('removed typing indicator reaction');
         },
         onStartError: (err) => {
-            logTypingFailure({
+            (0, plugin_sdk_1.logTypingFailure)({
                 log: (message) => log.warn(message),
                 channel: 'feishu',
                 action: 'start',
@@ -134,7 +138,7 @@ export function createFeishuReplyDispatcher(params) {
             });
         },
         onStopError: (err) => {
-            logTypingFailure({
+            (0, plugin_sdk_1.logTypingFailure)({
                 log: (message) => log.warn(message),
                 channel: 'feishu',
                 action: 'stop',
@@ -171,8 +175,11 @@ export function createFeishuReplyDispatcher(params) {
                 return;
             }
             const text = payload.text ?? '';
-            if (!text.trim()) {
-                log.debug('deliver: empty text, skipping');
+            const payloadMediaUrls = payload.mediaUrls?.length ? payload.mediaUrls
+                : payload.mediaUrl ? [payload.mediaUrl]
+                    : [];
+            if (!text.trim() && payloadMediaUrls.length === 0) {
+                log.debug('deliver: empty text and no media, skipping');
                 return;
             }
             // ---- Streaming card mode ----
@@ -187,48 +194,71 @@ export function createFeishuReplyDispatcher(params) {
                 // Card creation failed — fall through to static delivery
                 log.warn('deliver: card creation failed, falling back to static delivery');
             }
-            // ---- Static delivery ----
-            if (shouldUseCard(text)) {
-                const chunks = core.channel.text.chunkTextWithMode(text, textChunkLimit, chunkMode);
-                log.info('deliver: sending card chunks', { count: chunks.length, chatId });
-                for (const chunk of chunks) {
-                    try {
-                        await sendMarkdownCardFeishu({
-                            cfg,
-                            to: chatId,
-                            text: chunk,
-                            replyToMessageId,
-                            replyInThread,
-                            accountId,
-                        });
+            // ---- Static text delivery ----
+            if (text.trim()) {
+                if ((0, reply_mode_1.shouldUseCard)(text)) {
+                    const chunks = core.channel.text.chunkTextWithMode(text, textChunkLimit, chunkMode);
+                    log.info('deliver: sending card chunks', { count: chunks.length, chatId });
+                    for (const chunk of chunks) {
+                        try {
+                            await (0, send_1.sendMarkdownCardFeishu)({
+                                cfg,
+                                to: chatId,
+                                text: chunk,
+                                replyToMessageId,
+                                replyInThread,
+                                accountId,
+                            });
+                        }
+                        catch (err) {
+                            if (staticGuard?.terminate('deliver.cardChunk', err))
+                                return;
+                            throw err;
+                        }
                     }
-                    catch (err) {
-                        if (staticGuard?.terminate('deliver.cardChunk', err))
-                            return;
-                        throw err;
+                }
+                else {
+                    const converted = core.channel.text.convertMarkdownTables(text, tableMode);
+                    const chunks = core.channel.text.chunkTextWithMode(converted, textChunkLimit, chunkMode);
+                    log.info('deliver: sending text chunks', { count: chunks.length, chatId });
+                    for (const chunk of chunks) {
+                        try {
+                            await (0, send_1.sendMessageFeishu)({
+                                cfg,
+                                to: chatId,
+                                text: chunk,
+                                replyToMessageId,
+                                replyInThread,
+                                accountId,
+                            });
+                        }
+                        catch (err) {
+                            if (staticGuard?.terminate('deliver.textChunk', err))
+                                return;
+                            throw err;
+                        }
                     }
                 }
             }
-            else {
-                const converted = core.channel.text.convertMarkdownTables(text, tableMode);
-                const chunks = core.channel.text.chunkTextWithMode(converted, textChunkLimit, chunkMode);
-                log.info('deliver: sending text chunks', { count: chunks.length, chatId });
-                for (const chunk of chunks) {
-                    try {
-                        await sendMessageFeishu({
-                            cfg,
-                            to: chatId,
-                            text: chunk,
-                            replyToMessageId,
-                            replyInThread,
-                            accountId,
-                        });
-                    }
-                    catch (err) {
-                        if (staticGuard?.terminate('deliver.textChunk', err))
-                            return;
-                        throw err;
-                    }
+            // ---- Static media delivery ----
+            for (const mediaUrl of payloadMediaUrls) {
+                if (!mediaUrl?.trim())
+                    continue;
+                try {
+                    log.info('deliver: sending media via static path', { mediaUrl: mediaUrl.slice(0, 80) });
+                    await (0, deliver_1.sendMediaLark)({
+                        cfg,
+                        to: chatId,
+                        mediaUrl,
+                        accountId,
+                        replyToMessageId,
+                        replyInThread,
+                    });
+                }
+                catch (mediaErr) {
+                    if (staticGuard?.terminate('deliver.media', mediaErr))
+                        return;
+                    log.error('deliver: static media send failed', { error: String(mediaErr) });
                 }
             }
         },

@@ -1,0 +1,16 @@
+{
+  "records": [
+    {
+      "date": "20260320",
+      "total": 28,
+      "correct": 28,
+      "partial": 0,
+      "wrong": 0,
+      "accuracy": 100.0,
+      "note": "修正版：3/21 全部断板（滞涨日），模型预测晋级率<35%全部正确"
+    }
+  ],
+  "overall_accuracy": 100.0,
+  "total_trading_days": 1,
+  "model_version": "v3.0"
+}

@@ -5,6 +5,8 @@
  *
  * Markdown 样式优化工具
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.optimizeMarkdownStyle = optimizeMarkdownStyle;
 /**
  * 优化 Markdown 样式：
  * - 标题降级：H1 → H4，H2~H6 → H5
@@ -14,7 +16,7 @@
  * - 表格：单元格前后补空格，分隔符行规范化，表格前后加空行
  * - 代码块内容不受影响
  */
-export function optimizeMarkdownStyle(text, cardVersion = 2) {
+function optimizeMarkdownStyle(text, cardVersion = 2) {
     try {
         let r = _optimizeMarkdownStyle(text, cardVersion);
         r = stripInvalidImageKeys(r);
@@ -81,7 +83,11 @@ function _optimizeMarkdownStyle(text, cardVersion = 2) {
 const IMAGE_RE = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
 /**
  * Strip `![alt](value)` where value is not a valid Feishu image key
- * (`img_xxx`) or remote URL. Prevents CardKit error 200570.
+ * (`img_xxx`). Prevents CardKit error 200570.
+ *
+ * HTTP URLs are stripped as well — ImageResolver should have already
+ * replaced them with `img_xxx` keys before this point. This serves
+ * as a safety net for any unresolved URLs.
  */
 function stripInvalidImageKeys(text) {
     if (!text.includes('!['))
@@ -89,10 +95,6 @@ function stripInvalidImageKeys(text) {
     return text.replace(IMAGE_RE, (fullMatch, _alt, value) => {
         if (value.startsWith('img_'))
             return fullMatch;
-        if (value.startsWith('http://'))
-            return fullMatch;
-        if (value.startsWith('https://'))
-            return fullMatch;
-        return value;
+        return ''; // strip all non-img_ image references (URLs, local paths, etc.)
     });
 }

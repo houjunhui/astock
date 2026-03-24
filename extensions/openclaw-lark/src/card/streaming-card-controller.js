@@ -11,18 +11,21 @@
  * Delegates throttling to FlushController and message-unavailable
  * detection to UnavailableGuard.
  */
-import { SILENT_REPLY_TOKEN } from 'openclaw/plugin-sdk';
-import { extractLarkApiCode } from '../core/api-error';
-import { larkLogger } from '../core/lark-logger';
-import { sendCardFeishu, updateCardFeishu } from '../messaging/outbound/send';
-import { createCardEntity, sendCardByCardId, streamCardContent, updateCardKitCard, setCardStreamingMode, } from './cardkit';
-import { buildCardContent, splitReasoningText, stripReasoningTags, STREAMING_ELEMENT_ID, toCardKit2 } from './builder';
-import { optimizeMarkdownStyle } from './markdown-style';
-import { registerShutdownHook } from '../core/shutdown-hooks';
-import { FlushController } from './flush-controller';
-import { UnavailableGuard } from './unavailable-guard';
-import { TERMINAL_PHASES, PHASE_TRANSITIONS, THROTTLE_CONSTANTS, EMPTY_REPLY_FALLBACK_TEXT, } from './reply-dispatcher-types';
-const log = larkLogger('card/streaming');
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StreamingCardController = void 0;
+const plugin_sdk_1 = require("openclaw/plugin-sdk");
+const api_error_1 = require("../core/api-error");
+const lark_logger_1 = require("../core/lark-logger");
+const send_1 = require("../messaging/outbound/send");
+const cardkit_1 = require("./cardkit");
+const builder_1 = require("./builder");
+const markdown_style_1 = require("./markdown-style");
+const image_resolver_1 = require("./image-resolver");
+const shutdown_hooks_1 = require("../core/shutdown-hooks");
+const flush_controller_1 = require("./flush-controller");
+const unavailable_guard_1 = require("./unavailable-guard");
+const reply_dispatcher_types_1 = require("./reply-dispatcher-types");
+const log = (0, lark_logger_1.larkLogger)('card/streaming');
 // ---------------------------------------------------------------------------
 // CardKit 2.0 initial streaming payload
 // ---------------------------------------------------------------------------
@@ -30,7 +33,11 @@ const STREAMING_THINKING_CARD = {
     schema: '2.0',
     config: {
         streaming_mode: true,
-        summary: { content: '思考中...' },
+        locales: ['zh_cn', 'en_us'],
+        summary: {
+            content: 'Thinking...',
+            i18n_content: { zh_cn: '思考中...', en_us: 'Thinking...' },
+        },
     },
     body: {
         elements: [
@@ -40,7 +47,7 @@ const STREAMING_THINKING_CARD = {
                 text_align: 'left',
                 text_size: 'normal_v2',
                 margin: '0px 0px 0px 0px',
-                element_id: STREAMING_ELEMENT_ID,
+                element_id: builder_1.STREAMING_ELEMENT_ID,
             },
             {
                 tag: 'markdown',
@@ -58,7 +65,7 @@ const STREAMING_THINKING_CARD = {
 // ---------------------------------------------------------------------------
 // StreamingCardController
 // ---------------------------------------------------------------------------
-export class StreamingCardController {
+class StreamingCardController {
     // ---- Explicit state machine ----
     phase = 'idle';
     // ---- Structured state ----
@@ -83,6 +90,7 @@ export class StreamingCardController {
     // ---- Sub-controllers ----
     flush;
     guard;
+    imageResolver;
     // ---- Lifecycle ----
     createEpoch = 0;
     _terminalReason = null;
@@ -97,14 +105,23 @@ export class StreamingCardController {
     }
     constructor(deps) {
         this.deps = deps;
-        this.guard = new UnavailableGuard({
+        this.guard = new unavailable_guard_1.UnavailableGuard({
             replyToMessageId: deps.replyToMessageId,
             getCardMessageId: () => this.cardKit.cardMessageId,
             onTerminate: () => {
                 this.transition('terminated', 'UnavailableGuard', 'unavailable');
             },
         });
-        this.flush = new FlushController(() => this.performFlush());
+        this.flush = new flush_controller_1.FlushController(() => this.performFlush());
+        this.imageResolver = new image_resolver_1.ImageResolver({
+            cfg: deps.cfg,
+            accountId: deps.accountId,
+            onImageResolved: () => {
+                if (!this.isTerminalPhase && this.cardKit.cardMessageId) {
+                    void this.throttledCardUpdate();
+                }
+            },
+        });
     }
     // ------------------------------------------------------------------
     // Public accessors
@@ -113,7 +130,7 @@ export class StreamingCardController {
         return this.cardKit.cardMessageId;
     }
     get isTerminalPhase() {
-        return TERMINAL_PHASES.has(this.phase);
+        return reply_dispatcher_types_1.TERMINAL_PHASES.has(this.phase);
     }
     /**
      * Whether the card has been explicitly aborted (via abortCard()).
@@ -171,13 +188,13 @@ export class StreamingCardController {
         const from = this.phase;
         if (from === to)
             return false;
-        if (!PHASE_TRANSITIONS[from].has(to)) {
+        if (!reply_dispatcher_types_1.PHASE_TRANSITIONS[from].has(to)) {
             log.warn('phase transition rejected', { from, to, source });
             return false;
         }
         this.phase = to;
         log.info('phase transition', { from, to, source, reason });
-        if (TERMINAL_PHASES.has(to)) {
+        if (reply_dispatcher_types_1.TERMINAL_PHASES.has(to)) {
             this._terminalReason = reason ?? null;
             this.onEnterTerminalPhase();
         }
@@ -210,7 +227,7 @@ export class StreamingCardController {
             return;
         if (!this.cardKit.cardMessageId)
             return;
-        const split = splitReasoningText(text);
+        const split = (0, builder_1.splitReasoningText)(text);
         if (split.reasoningText && !split.answerText) {
             // Pure reasoning payload
             this.reasoning.reasoningElapsedMs = this.reasoning.reasoningStartTime
@@ -251,14 +268,14 @@ export class StreamingCardController {
             this.reasoning.reasoningStartTime = Date.now();
         }
         this.reasoning.isReasoningPhase = true;
-        const split = splitReasoningText(rawText);
+        const split = (0, builder_1.splitReasoningText)(rawText);
         this.reasoning.accumulatedReasoningText = split.reasoningText ?? rawText;
         await this.throttledCardUpdate();
     }
     async onPartialReply(payload) {
         if (!this.shouldProceed('onPartialReply'))
             return;
-        const text = stripReasoningTags(payload.text ?? '');
+        const text = (0, builder_1.stripReasoningTags)(payload.text ?? '');
         log.debug('onPartialReply', { len: text.length });
         if (!text)
             return;
@@ -278,7 +295,7 @@ export class StreamingCardController {
         this.text.lastPartialText = text;
         this.text.accumulatedText = this.text.streamingPrefix ? this.text.streamingPrefix + '\n\n' + text : text;
         // NO_REPLY 缓冲
-        if (!this.text.streamingPrefix && SILENT_REPLY_TOKEN.startsWith(this.text.accumulatedText.trim())) {
+        if (!this.text.streamingPrefix && plugin_sdk_1.SILENT_REPLY_TOKEN.startsWith(this.text.accumulatedText.trim())) {
             log.debug('onPartialReply: buffering NO_REPLY prefix');
             return;
         }
@@ -300,10 +317,11 @@ export class StreamingCardController {
         const errorEffectiveCardId = this.cardKit.cardKitCardId ?? this.cardKit.originalCardKitCardId;
         if (this.cardKit.cardMessageId) {
             try {
-                const errorText = this.text.accumulatedText
+                const rawErrorText = this.text.accumulatedText
                     ? `${this.text.accumulatedText}\n\n---\n**Error**: An error occurred while generating the response.`
                     : '**Error**: An error occurred while generating the response.';
-                const errorCard = buildCardContent('complete', {
+                const errorText = this.imageResolver.resolveImages(rawErrorText);
+                const errorCard = (0, builder_1.buildCardContent)('complete', {
                     text: errorText,
                     reasoningText: this.reasoning.accumulatedReasoningText || undefined,
                     reasoningElapsedMs: this.reasoning.reasoningElapsedMs || undefined,
@@ -315,7 +333,7 @@ export class StreamingCardController {
                     await this.closeStreamingAndUpdate(errorEffectiveCardId, errorCard, 'onError');
                 }
                 else {
-                    await updateCardFeishu({
+                    await (0, send_1.updateCardFeishu)({
                         cfg: this.deps.cfg,
                         messageId: this.cardKit.cardMessageId,
                         card: errorCard,
@@ -352,7 +370,7 @@ export class StreamingCardController {
                         seqBefore: seqBeforeClose,
                         seqAfter: this.cardKit.cardKitSequence,
                     });
-                    await setCardStreamingMode({
+                    await (0, cardkit_1.setCardStreamingMode)({
                         cfg: this.deps.cfg,
                         cardId: idleEffectiveCardId,
                         streamingMode: false,
@@ -360,13 +378,14 @@ export class StreamingCardController {
                         accountId: this.deps.accountId,
                     });
                 }
-                const isNoReplyLeak = !this.text.completedText && SILENT_REPLY_TOKEN.startsWith(this.text.accumulatedText.trim());
-                const displayText = this.text.completedText || (isNoReplyLeak ? '' : this.text.accumulatedText) || EMPTY_REPLY_FALLBACK_TEXT;
+                const isNoReplyLeak = !this.text.completedText && plugin_sdk_1.SILENT_REPLY_TOKEN.startsWith(this.text.accumulatedText.trim());
+                const displayText = this.text.completedText || (isNoReplyLeak ? '' : this.text.accumulatedText) || reply_dispatcher_types_1.EMPTY_REPLY_FALLBACK_TEXT;
                 if (!this.text.completedText && !this.text.accumulatedText) {
                     log.warn('reply completed without visible text, using empty-reply fallback');
                 }
-                const completeCard = buildCardContent('complete', {
-                    text: displayText,
+                const resolvedDisplayText = await this.imageResolver.resolveImagesAwait(displayText, 15_000);
+                const completeCard = (0, builder_1.buildCardContent)('complete', {
+                    text: resolvedDisplayText,
                     reasoningText: this.reasoning.accumulatedReasoningText || undefined,
                     reasoningElapsedMs: this.reasoning.reasoningElapsedMs || undefined,
                     elapsedMs: this.elapsed(),
@@ -379,16 +398,16 @@ export class StreamingCardController {
                         seqBefore: seqBeforeUpdate,
                         seqAfter: this.cardKit.cardKitSequence,
                     });
-                    await updateCardKitCard({
+                    await (0, cardkit_1.updateCardKitCard)({
                         cfg: this.deps.cfg,
                         cardId: idleEffectiveCardId,
-                        card: toCardKit2(completeCard),
+                        card: (0, builder_1.toCardKit2)(completeCard),
                         sequence: this.cardKit.cardKitSequence,
                         accountId: this.deps.accountId,
                     });
                 }
                 else {
-                    await updateCardFeishu({
+                    await (0, send_1.updateCardFeishu)({
                         cfg: this.deps.cfg,
                         messageId: this.cardKit.cardMessageId,
                         card: completeCard,
@@ -427,8 +446,8 @@ export class StreamingCardController {
             const effectiveCardId = this.cardKit.cardKitCardId ?? this.cardKit.originalCardKitCardId;
             if (effectiveCardId) {
                 const elapsedMs = Date.now() - this.dispatchStartTime;
-                const abortText = this.text.accumulatedText || 'Aborted.';
-                const abortCardContent = buildCardContent('complete', {
+                const abortText = this.imageResolver.resolveImages(this.text.accumulatedText || 'Aborted.');
+                const abortCardContent = (0, builder_1.buildCardContent)('complete', {
                     text: abortText,
                     reasoningText: this.reasoning.accumulatedReasoningText || undefined,
                     reasoningElapsedMs: this.reasoning.reasoningElapsedMs || undefined,
@@ -442,8 +461,8 @@ export class StreamingCardController {
             else if (this.cardKit.cardMessageId) {
                 // IM fallback: 卡片不是通过 CardKit 发的，用 im.message.patch 更新
                 const elapsedMs = Date.now() - this.dispatchStartTime;
-                const abortText = this.text.accumulatedText || 'Aborted.';
-                const abortCard = buildCardContent('complete', {
+                const abortText = this.imageResolver.resolveImages(this.text.accumulatedText || 'Aborted.');
+                const abortCard = (0, builder_1.buildCardContent)('complete', {
                     text: abortText,
                     reasoningText: this.reasoning.accumulatedReasoningText || undefined,
                     reasoningElapsedMs: this.reasoning.reasoningElapsedMs || undefined,
@@ -451,7 +470,7 @@ export class StreamingCardController {
                     isAborted: true,
                     footer: this.deps.resolvedFooter,
                 });
-                await updateCardFeishu({
+                await (0, send_1.updateCardFeishu)({
                     cfg: this.deps.cfg,
                     messageId: this.cardKit.cardMessageId,
                     card: abortCard,
@@ -485,7 +504,7 @@ export class StreamingCardController {
             try {
                 try {
                     // Step 1: Create card entity
-                    const cId = await createCardEntity({
+                    const cId = await (0, cardkit_1.createCardEntity)({
                         cfg: this.deps.cfg,
                         card: STREAMING_THINKING_CARD,
                         accountId: this.deps.accountId,
@@ -501,13 +520,13 @@ export class StreamingCardController {
                         this.cardKit.cardKitCardId = cId;
                         this.cardKit.originalCardKitCardId = cId;
                         this.cardKit.cardKitSequence = 1;
-                        this.disposeShutdownHook = registerShutdownHook(`streaming-card:${cId}`, () => this.abortCard());
+                        this.disposeShutdownHook = (0, shutdown_hooks_1.registerShutdownHook)(`streaming-card:${cId}`, () => this.abortCard());
                         log.info('created CardKit entity', {
                             cardId: cId,
                             initialSequence: this.cardKit.cardKitSequence,
                         });
                         // Step 2: Send IM message referencing card_id
-                        const result = await sendCardByCardId({
+                        const result = await (0, cardkit_1.sendCardByCardId)({
                             cfg: this.deps.cfg,
                             to: this.deps.chatId,
                             cardId: cId,
@@ -548,8 +567,8 @@ export class StreamingCardController {
                     log.warn('CardKit flow failed, falling back to IM', { apiDetail });
                     this.cardKit.cardKitCardId = null;
                     this.cardKit.originalCardKitCardId = null;
-                    const fallbackCard = buildCardContent('thinking');
-                    const result = await sendCardFeishu({
+                    const fallbackCard = (0, builder_1.buildCardContent)('thinking');
+                    const result = await (0, send_1.sendCardFeishu)({
                         cfg: this.deps.cfg,
                         to: this.deps.chatId,
                         card: fallbackCard,
@@ -602,6 +621,7 @@ export class StreamingCardController {
         });
         try {
             const displayText = this.buildDisplayText();
+            const resolvedText = this.imageResolver.resolveImages(displayText);
             if (this.cardKit.cardKitCardId) {
                 // CardKit streaming — typewriter effect
                 const prevSeq = this.cardKit.cardKitSequence;
@@ -610,22 +630,22 @@ export class StreamingCardController {
                     seqBefore: prevSeq,
                     seqAfter: this.cardKit.cardKitSequence,
                 });
-                await streamCardContent({
+                await (0, cardkit_1.streamCardContent)({
                     cfg: this.deps.cfg,
                     cardId: this.cardKit.cardKitCardId,
-                    elementId: STREAMING_ELEMENT_ID,
-                    content: optimizeMarkdownStyle(displayText),
+                    elementId: builder_1.STREAMING_ELEMENT_ID,
+                    content: (0, markdown_style_1.optimizeMarkdownStyle)(resolvedText),
                     sequence: this.cardKit.cardKitSequence,
                     accountId: this.deps.accountId,
                 });
             }
             else {
                 log.debug('flushCardUpdate: IM patch fallback');
-                const card = buildCardContent('streaming', {
-                    text: this.reasoning.isReasoningPhase ? '' : displayText,
+                const card = (0, builder_1.buildCardContent)('streaming', {
+                    text: this.reasoning.isReasoningPhase ? '' : resolvedText,
                     reasoningText: this.reasoning.isReasoningPhase ? this.reasoning.accumulatedReasoningText : undefined,
                 });
-                await updateCardFeishu({
+                await (0, send_1.updateCardFeishu)({
                     cfg: this.deps.cfg,
                     messageId: this.cardKit.cardMessageId,
                     card: card,
@@ -636,7 +656,7 @@ export class StreamingCardController {
         catch (err) {
             if (this.guard.terminate('flushCardUpdate', err))
                 return;
-            const apiCode = extractLarkApiCode(err);
+            const apiCode = (0, api_error_1.extractLarkApiCode)(err);
             if (apiCode === 230020) {
                 log.info('flushCardUpdate: rate limited (230020), skipping', {
                     seq: this.cardKit.cardKitSequence,
@@ -665,7 +685,7 @@ export class StreamingCardController {
     async throttledCardUpdate() {
         if (this.guard.shouldSkip('throttledCardUpdate'))
             return;
-        const throttleMs = this.cardKit.cardKitCardId ? THROTTLE_CONSTANTS.CARDKIT_MS : THROTTLE_CONSTANTS.PATCH_MS;
+        const throttleMs = this.cardKit.cardKitCardId ? reply_dispatcher_types_1.THROTTLE_CONSTANTS.CARDKIT_MS : reply_dispatcher_types_1.THROTTLE_CONSTANTS.PATCH_MS;
         await this.flush.throttledUpdate(throttleMs);
     }
     // ------------------------------------------------------------------
@@ -684,7 +704,7 @@ export class StreamingCardController {
             seqBefore: seqBeforeClose,
             seqAfter: this.cardKit.cardKitSequence,
         });
-        await setCardStreamingMode({
+        await (0, cardkit_1.setCardStreamingMode)({
             cfg: this.deps.cfg,
             cardId,
             streamingMode: false,
@@ -697,15 +717,16 @@ export class StreamingCardController {
             seqBefore: seqBeforeUpdate,
             seqAfter: this.cardKit.cardKitSequence,
         });
-        await updateCardKitCard({
+        await (0, cardkit_1.updateCardKitCard)({
             cfg: this.deps.cfg,
             cardId,
-            card: toCardKit2(card),
+            card: (0, builder_1.toCardKit2)(card),
             sequence: this.cardKit.cardKitSequence,
             accountId: this.deps.accountId,
         });
     }
 }
+exports.StreamingCardController = StreamingCardController;
 // ---------------------------------------------------------------------------
 // Error detail extraction helpers (replacing `any` casts)
 // ---------------------------------------------------------------------------

@@ -13,13 +13,15 @@
  * the converter context so that async converters (e.g. merge_forward)
  * can make API calls during parsing.
  */
-import { convertMessageContent } from '../converters/content-converter';
-import { getUserNameCache } from './user-name-cache';
-import { getLarkAccount } from '../../core/accounts';
-import { LarkClient } from '../../core/lark-client';
-import { larkLogger } from '../../core/lark-logger';
-import { fetchCardContent, createFetchSubMessages, createParseResolveNames } from './parse-io';
-const log = larkLogger('inbound/parse');
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseMessageEvent = parseMessageEvent;
+const content_converter_1 = require("../converters/content-converter");
+const user_name_cache_1 = require("./user-name-cache");
+const accounts_1 = require("../../core/accounts");
+const lark_client_1 = require("../../core/lark-client");
+const lark_logger_1 = require("../../core/lark-logger");
+const parse_io_1 = require("./parse-io");
+const log = (0, lark_logger_1.larkLogger)('inbound/parse');
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -30,7 +32,7 @@ const log = larkLogger('inbound/parse');
  *                   callbacks for async converters (e.g. merge_forward)
  *                   to fetch sub-messages and resolve sender names.
  */
-export async function parseMessageEvent(event, botOpenId, expandCtx) {
+async function parseMessageEvent(event, botOpenId, expandCtx) {
     // 1. Build MentionInfo list from event mentions
     const mentionMap = new Map();
     const mentionList = [];
@@ -55,19 +57,19 @@ export async function parseMessageEvent(event, botOpenId, expandCtx) {
     // 2. Convert content via registered converter
     const acctId = expandCtx?.accountId;
     // Create larkClient once when expandCtx is available (used for merge_forward & card fetch)
-    const larkClient = expandCtx ? LarkClient.fromCfg(expandCtx.cfg, acctId) : undefined;
+    const larkClient = expandCtx ? lark_client_1.LarkClient.fromCfg(expandCtx.cfg, acctId) : undefined;
     // Build merge_forward callbacks when expandCtx is provided
     let fetchSubMessages;
     let batchResolveNames;
     if (expandCtx) {
-        const account = getLarkAccount(expandCtx.cfg, acctId);
-        fetchSubMessages = createFetchSubMessages(larkClient);
-        batchResolveNames = createParseResolveNames(account);
+        const account = (0, accounts_1.getLarkAccount)(expandCtx.cfg, acctId);
+        fetchSubMessages = (0, parse_io_1.createFetchSubMessages)(larkClient);
+        batchResolveNames = (0, parse_io_1.createParseResolveNames)(account);
     }
     // For interactive messages, fetch full v2 card content via API
     let effectiveContent = event.message.content;
     if (event.message.message_type === 'interactive' && expandCtx) {
-        const fullContent = await fetchCardContent(event.message.message_id, larkClient);
+        const fullContent = await (0, parse_io_1.fetchCardContent)(event.message.message_id, larkClient);
         if (fullContent) {
             effectiveContent = fullContent;
             log.info('replaced interactive content with full v2 card data');
@@ -80,12 +82,12 @@ export async function parseMessageEvent(event, botOpenId, expandCtx) {
         botOpenId,
         cfg: expandCtx?.cfg,
         accountId: acctId,
-        resolveUserName: acctId ? (openId) => getUserNameCache(acctId).get(openId) : undefined,
+        resolveUserName: acctId ? (openId) => (0, user_name_cache_1.getUserNameCache)(acctId).get(openId) : undefined,
         fetchSubMessages,
         batchResolveNames,
         stripBotMentions: true,
     };
-    const { content, resources } = await convertMessageContent(effectiveContent, event.message.message_type, convertCtx);
+    const { content, resources } = await (0, content_converter_1.convertMessageContent)(effectiveContent, event.message.message_type, convertCtx);
     const createTimeStr = event.message.create_time;
     const createTime = createTimeStr ? parseInt(createTimeStr, 10) : undefined;
     return {

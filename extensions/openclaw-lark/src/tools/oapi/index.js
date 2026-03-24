@@ -8,52 +8,54 @@
  * This module registers all tools that directly use Feishu Open API (OAPI).
  * These tools are placed here to distinguish them from MCP-based tools.
  */
-import { registerFeishuCalendarCalendarTool, registerFeishuCalendarEventTool, registerFeishuCalendarEventAttendeeTool, registerFeishuCalendarFreebusyTool, } from './calendar/index';
-import { registerFeishuTaskTaskTool, registerFeishuTaskTasklistTool, registerFeishuTaskCommentTool, registerFeishuTaskSubtaskTool, } from './task/index';
-import { registerFeishuBitableAppTool, registerFeishuBitableAppTableTool, registerFeishuBitableAppTableRecordTool, registerFeishuBitableAppTableFieldTool, registerFeishuBitableAppTableViewTool, } from './bitable/index';
-import { registerGetUserTool, registerSearchUserTool } from './common/index';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.registerOapiTools = registerOapiTools;
+const index_1 = require("./calendar/index");
+const index_2 = require("./task/index");
+const index_3 = require("./bitable/index");
+const index_4 = require("./common/index");
 // import { registerFeishuMailTools } from "./mail/index";
-import { registerFeishuSearchTools } from './search/index';
-import { registerFeishuDriveTools } from './drive/index';
-import { registerFeishuWikiTools } from './wiki/index';
-import { registerFeishuImTools as registerFeishuImBotTools } from '../tat/im/index';
-import { registerFeishuSheetsTools } from './sheets/index';
+const index_5 = require("./search/index");
+const index_6 = require("./drive/index");
+const index_7 = require("./wiki/index");
+const index_8 = require("../tat/im/index");
+const index_9 = require("./sheets/index");
 // import { registerFeishuOkrTools } from "./okr/index";
-import { registerFeishuChatTools } from './chat/index';
-import { registerFeishuImTools as registerFeishuImUserTools } from './im/index';
-export function registerOapiTools(api) {
+const index_10 = require("./chat/index");
+const index_11 = require("./im/index");
+function registerOapiTools(api) {
     // Common tools
-    registerGetUserTool(api);
-    registerSearchUserTool(api);
+    (0, index_4.registerGetUserTool)(api);
+    (0, index_4.registerSearchUserTool)(api);
     // Chat tools
-    registerFeishuChatTools(api);
+    (0, index_10.registerFeishuChatTools)(api);
     // IM tools (user identity)
-    registerFeishuImUserTools(api);
+    (0, index_11.registerFeishuImTools)(api);
     // Calendar tools
-    registerFeishuCalendarCalendarTool(api);
-    registerFeishuCalendarEventTool(api);
-    registerFeishuCalendarEventAttendeeTool(api);
-    registerFeishuCalendarFreebusyTool(api);
+    (0, index_1.registerFeishuCalendarCalendarTool)(api);
+    (0, index_1.registerFeishuCalendarEventTool)(api);
+    (0, index_1.registerFeishuCalendarEventAttendeeTool)(api);
+    (0, index_1.registerFeishuCalendarFreebusyTool)(api);
     // Task tools
-    registerFeishuTaskTaskTool(api);
-    registerFeishuTaskTasklistTool(api);
-    registerFeishuTaskCommentTool(api);
-    registerFeishuTaskSubtaskTool(api);
+    (0, index_2.registerFeishuTaskTaskTool)(api);
+    (0, index_2.registerFeishuTaskTasklistTool)(api);
+    (0, index_2.registerFeishuTaskCommentTool)(api);
+    (0, index_2.registerFeishuTaskSubtaskTool)(api);
     // Bitable tools
-    registerFeishuBitableAppTool(api);
-    registerFeishuBitableAppTableTool(api);
-    registerFeishuBitableAppTableRecordTool(api);
-    registerFeishuBitableAppTableFieldTool(api);
-    registerFeishuBitableAppTableViewTool(api);
+    (0, index_3.registerFeishuBitableAppTool)(api);
+    (0, index_3.registerFeishuBitableAppTableTool)(api);
+    (0, index_3.registerFeishuBitableAppTableRecordTool)(api);
+    (0, index_3.registerFeishuBitableAppTableFieldTool)(api);
+    (0, index_3.registerFeishuBitableAppTableViewTool)(api);
     // Search tools
-    registerFeishuSearchTools(api);
+    (0, index_5.registerFeishuSearchTools)(api);
     // Drive tools
-    registerFeishuDriveTools(api);
+    (0, index_6.registerFeishuDriveTools)(api);
     // Wiki tools
-    registerFeishuWikiTools(api);
+    (0, index_7.registerFeishuWikiTools)(api);
     // Sheets tools
-    registerFeishuSheetsTools(api);
+    (0, index_9.registerFeishuSheetsTools)(api);
     // IM tools (bot identity)
-    registerFeishuImBotTools(api);
+    (0, index_8.registerFeishuImTools)(api);
     api.logger.info?.('Registered all OAPI tools (calendar, task, bitable, search, drive, wiki, sheets, im)');
 }

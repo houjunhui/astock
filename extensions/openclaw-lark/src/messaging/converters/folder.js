@@ -5,9 +5,11 @@
  *
  * Converter for "folder" message type.
  */
-import { safeParse } from './utils';
-export const convertFolder = (raw) => {
-    const parsed = safeParse(raw);
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.convertFolder = void 0;
+const utils_1 = require("./utils");
+const convertFolder = (raw) => {
+    const parsed = (0, utils_1.safeParse)(raw);
     const fileKey = parsed?.file_key;
     if (!fileKey) {
         return { content: '[folder]', resources: [] };
@@ -19,3 +21,4 @@ export const convertFolder = (raw) => {
         resources: [{ type: 'file', fileKey, fileName: fileName || undefined }],
     };
 };
+exports.convertFolder = convertFolder;

@@ -6,7 +6,7 @@ _openclaw_completion() {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     
     # Simple top-level completion for now
-    opts="completion setup onboard configure config doctor dashboard reset uninstall message memory agent agents status health sessions browser acp gateway daemon logs system models approvals nodes devices node sandbox tui cron dns docs hooks webhooks qr clawbot pairing plugins channels directory security secrets skills update -V, --dev --profile --log-level --no-color"
+    opts="completion setup onboard configure config backup doctor dashboard reset uninstall message memory agent agents status health sessions browser acp gateway daemon logs system models approvals nodes devices node sandbox tui cron dns docs hooks webhooks qr clawbot feishu-diagnose pairing plugins channels directory security secrets skills update -V, --dev --profile --log-level --no-color"
     
     case "${prev}" in
       completion)
@@ -20,7 +20,7 @@ _openclaw_completion() {
         return 0
         ;;
       onboard)
-        opts=" --workspace --reset --reset-scope --non-interactive --accept-risk --flow --mode --auth-choice --token-provider --token --token-profile-id --token-expires-in --secret-input-mode --cloudflare-ai-gateway-account-id --cloudflare-ai-gateway-gateway-id --anthropic-api-key --openai-api-key --mistral-api-key --openrouter-api-key --kilocode-api-key --ai-gateway-api-key --cloudflare-ai-gateway-api-key --moonshot-api-key --kimi-code-api-key --gemini-api-key --zai-api-key --xiaomi-api-key --minimax-api-key --synthetic-api-key --venice-api-key --together-api-key --huggingface-api-key --opencode-zen-api-key --xai-api-key --litellm-api-key --qianfan-api-key --volcengine-api-key --byteplus-api-key --custom-base-url --custom-api-key --custom-model-id --custom-provider-id --custom-compatibility --gateway-port --gateway-bind --gateway-auth --gateway-token --gateway-password --remote-url --remote-token --tailscale --tailscale-reset-on-exit --install-daemon --no-install-daemon --skip-daemon --daemon-runtime --skip-channels --skip-skills --skip-health --skip-ui --node-manager --json"
+        opts=" --workspace --reset --reset-scope --non-interactive --accept-risk --flow --mode --auth-choice --token-provider --token --token-profile-id --token-expires-in --secret-input-mode --cloudflare-ai-gateway-account-id --cloudflare-ai-gateway-gateway-id --anthropic-api-key --openai-api-key --mistral-api-key --openrouter-api-key --kilocode-api-key --ai-gateway-api-key --cloudflare-ai-gateway-api-key --moonshot-api-key --kimi-code-api-key --gemini-api-key --zai-api-key --xiaomi-api-key --minimax-api-key --synthetic-api-key --venice-api-key --together-api-key --huggingface-api-key --opencode-zen-api-key --opencode-go-api-key --xai-api-key --litellm-api-key --qianfan-api-key --modelstudio-api-key-cn --modelstudio-api-key --volcengine-api-key --byteplus-api-key --custom-base-url --custom-api-key --custom-model-id --custom-provider-id --custom-compatibility --gateway-port --gateway-bind --gateway-auth --gateway-token --gateway-token-ref-env --gateway-password --remote-url --remote-token --tailscale --tailscale-reset-on-exit --install-daemon --no-install-daemon --skip-daemon --daemon-runtime --skip-channels --skip-skills --skip-search --skip-health --skip-ui --node-manager --json"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
         ;;
@@ -30,7 +30,12 @@ _openclaw_completion() {
         return 0
         ;;
       config)
-        opts="get set unset --section"
+        opts="get set unset file validate --section"
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+        ;;
+      backup)
+        opts="create verify "
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
         ;;
@@ -95,12 +100,12 @@ _openclaw_completion() {
         return 0
         ;;
       acp)
-        opts="client --url --token --token-file --password --password-file --session --session-label --require-existing --reset-session --no-prefix-cwd -v,"
+        opts="client --url --token --token-file --password --password-file --session --session-label --require-existing --reset-session --no-prefix-cwd --provenance -v,"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
         ;;
       gateway)
-        opts="run status install uninstall start stop restart call usage-cost health probe discover --port --bind --token --auth --password --tailscale --tailscale-reset-on-exit --allow-unconfigured --dev --reset --force --verbose --claude-cli-logs --ws-log --compact --raw-stream --raw-stream-path"
+        opts="run status install uninstall start stop restart call usage-cost health probe discover --port --bind --token --auth --password --password-file --tailscale --tailscale-reset-on-exit --allow-unconfigured --dev --reset --force --verbose --claude-cli-logs --ws-log --compact --raw-stream --raw-stream-path"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
         ;;
@@ -186,6 +191,11 @@ _openclaw_completion() {
         ;;
       clawbot)
         opts="qr "
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+        ;;
+      feishu-diagnose)
+        opts=" --trace --analyze"
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
         return 0
         ;;

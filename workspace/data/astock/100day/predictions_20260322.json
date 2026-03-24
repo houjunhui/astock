@@ -1,0 +1,1302 @@
+[
+  {
+    "code": "603687",
+    "name": "",
+    "prob": 100,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "底部金叉",
+      "shape": "十字星",
+      "vol_status": "缩量",
+      "vol_ratio": 0.32,
+      "ma5": 11.32,
+      "ma10": 10.69,
+      "ma20": 10.85,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 74.1
+    },
+    "position": {
+      "position": "3进4",
+      "height": "高位3板",
+      "zt_count": 3,
+      "zt_days": [
+        "2026-03-18",
+        "2026-03-19",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 3
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 30,
+      "身位调整": 0,
+      "历史统计": 3,
+      "资金活跃": 15
+    },
+    "signal": "✅强烈推荐",
+    "reason": "缩量整理, RSI超买(74.1)",
+    "lb_count": 3,
+    "industry": ""
+  },
+  {
+    "code": "000601",
+    "name": "",
+    "prob": 88,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "十字星",
+      "vol_status": "正常量",
+      "vol_ratio": 1.19,
+      "ma5": 6.94,
+      "ma10": 6.84,
+      "ma20": 6.19,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 75.6
+    },
+    "position": {
+      "position": "3进4",
+      "height": "高位3板",
+      "zt_count": 5,
+      "zt_days": [
+        "2026-03-06",
+        "2026-03-09",
+        "2026-03-18",
+        "2026-03-19",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 3
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": 0,
+      "历史统计": 3,
+      "资金活跃": 0
+    },
+    "signal": "✅强烈推荐",
+    "reason": "上升通道, RSI超买(75.6)",
+    "lb_count": 3,
+    "industry": ""
+  },
+  {
+    "code": "600617",
+    "name": "",
+    "prob": 80,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 2.13,
+      "ma5": 3.54,
+      "ma10": 3.52,
+      "ma20": 3.42,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 65.7
+    },
+    "position": {
+      "position": "2进3",
+      "height": "中位2板",
+      "zt_count": 3,
+      "zt_days": [
+        "2026-03-03",
+        "2026-03-19",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 9.9,
+      "consecutive": 2
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 30,
+      "身位调整": 0,
+      "历史统计": -10,
+      "资金活跃": 0
+    },
+    "signal": "✅强烈推荐",
+    "reason": "上升通道",
+    "lb_count": 2,
+    "industry": ""
+  },
+  {
+    "code": "600726",
+    "name": "",
+    "prob": 65,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 2.52,
+      "ma5": 4.75,
+      "ma10": 4.16,
+      "ma20": 3.42,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 95.2
+    },
+    "position": {
+      "position": "2进3",
+      "height": "中位2板",
+      "zt_count": 6,
+      "zt_days": [
+        "2026-03-10",
+        "2026-03-11",
+        "2026-03-12",
+        "2026-03-13",
+        "2026-03-19",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 2
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 15,
+      "身位调整": 0,
+      "历史统计": -10,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, RSI超买(95.2)",
+    "lb_count": 2,
+    "industry": ""
+  },
+  {
+    "code": "000677",
+    "name": "",
+    "prob": 63,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "十字星",
+      "vol_status": "正常量",
+      "vol_ratio": 1.05,
+      "ma5": 4.84,
+      "ma10": 4.73,
+      "ma20": 4.4,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 68.7
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 3,
+      "zt_days": [
+        "2026-03-06",
+        "2026-03-13",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 9.9,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 30,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "002150",
+    "name": "",
+    "prob": 63,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "正常量",
+      "vol_ratio": 1.18,
+      "ma5": 33.25,
+      "ma10": 31.71,
+      "ma20": 29.55,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 69.1
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 7,
+      "zt_days": [
+        "2026-01-23",
+        "2026-01-27",
+        "2026-02-06",
+        "2026-03-11",
+        "2026-03-12",
+        "2026-03-17",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 30,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603026",
+    "name": "",
+    "prob": 63,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 1.55,
+      "ma5": 72.86,
+      "ma10": 70.59,
+      "ma20": 67.87,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 66.1
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 1,
+      "zt_days": [
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 30,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603538",
+    "name": "",
+    "prob": 58,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "阳线",
+      "vol_status": "放量",
+      "vol_ratio": 2.25,
+      "ma5": 26.2,
+      "ma10": 24.87,
+      "ma20": 23.14,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 72.9
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 2,
+      "zt_days": [
+        "2026-03-13",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, RSI超买(72.9), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "002256",
+    "name": "",
+    "prob": 58,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 2.01,
+      "ma5": 4.18,
+      "ma10": 4.05,
+      "ma20": 3.88,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 71.8
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 2,
+      "zt_days": [
+        "2026-03-17",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, RSI超买(71.8), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "002309",
+    "name": "",
+    "prob": 58,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "正常量",
+      "vol_ratio": 1.35,
+      "ma5": 3.54,
+      "ma10": 3.53,
+      "ma20": 3.48,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "突破",
+      "突破60日": "未破",
+      "rsi": 74.2
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 2,
+      "zt_days": [
+        "2026-02-09",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.1,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, RSI超买(74.2), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "000509",
+    "name": "",
+    "prob": 58,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "正常量",
+      "vol_ratio": 1.37,
+      "ma5": 4.2,
+      "ma10": 4.06,
+      "ma20": 3.79,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 79.7
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 3,
+      "zt_days": [
+        "2026-03-05",
+        "2026-03-06",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 9.9,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, RSI超买(79.7), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "605299",
+    "name": "",
+    "prob": 58,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 2.43,
+      "ma5": 14.09,
+      "ma10": 13.36,
+      "ma20": 12.82,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 78.9
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 3,
+      "zt_days": [
+        "2026-01-21",
+        "2026-03-16",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, RSI超买(78.9), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "301658",
+    "name": "",
+    "prob": 58,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 1.57,
+      "ma5": 51.19,
+      "ma10": 48.47,
+      "ma20": 41.14,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 78.7
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 5,
+      "zt_days": [
+        "2026-03-03",
+        "2026-03-09",
+        "2026-03-11",
+        "2026-03-12",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 20.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, RSI超买(78.7), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603778",
+    "name": "",
+    "prob": 58,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "正常量",
+      "vol_ratio": 1.46,
+      "ma5": 23.25,
+      "ma10": 21.62,
+      "ma20": 18.39,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 76.3
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 9,
+      "zt_days": [
+        "2026-01-22",
+        "2026-02-03",
+        "2026-02-04",
+        "2026-03-03",
+        "2026-03-06",
+        "2026-03-11",
+        "2026-03-16",
+        "2026-03-17",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, RSI超买(76.3), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "002310",
+    "name": "",
+    "prob": 55,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 3.38,
+      "ma5": 3.1,
+      "ma10": 2.85,
+      "ma20": 2.61,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 85.8
+    },
+    "position": {
+      "position": "2进3",
+      "height": "中位2板",
+      "zt_count": 3,
+      "zt_days": [
+        "2026-03-16",
+        "2026-03-19",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.1,
+      "consecutive": 2
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 15,
+      "身位调整": 0,
+      "历史统计": -10,
+      "资金活跃": -10
+    },
+    "signal": "⚠️可关注",
+    "reason": "上升通道, RSI超买(85.8)",
+    "lb_count": 2,
+    "industry": ""
+  },
+  {
+    "code": "002428",
+    "name": "",
+    "prob": 53,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "顶部死叉",
+      "shape": "十字星",
+      "vol_status": "缩量",
+      "vol_ratio": 0.31,
+      "ma5": 41.36,
+      "ma10": 42.87,
+      "ma20": 42.74,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "突破",
+      "突破60日": "未破",
+      "rsi": 44.2
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 3,
+      "zt_days": [
+        "2026-02-25",
+        "2026-02-26",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 5,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 15
+    },
+    "signal": "⚠️可关注",
+    "reason": "缩量整理, 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "600310",
+    "name": "",
+    "prob": 48,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 4.15,
+      "ma5": 4.44,
+      "ma10": 4.42,
+      "ma20": 4.26,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 75.0
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 1,
+      "zt_days": [
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 9.9,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": -10
+    },
+    "signal": "❌回避",
+    "reason": "上升通道, RSI超买(75.0), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "600683",
+    "name": "",
+    "prob": 48,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "大阳线",
+      "vol_status": "正常量",
+      "vol_ratio": 1.15,
+      "ma5": 10.32,
+      "ma10": 9.03,
+      "ma20": 8.01,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 84.5
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 8,
+      "zt_days": [
+        "2026-02-03",
+        "2026-02-04",
+        "2026-02-05",
+        "2026-02-09",
+        "2026-03-13",
+        "2026-03-16",
+        "2026-03-17",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 15,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "❌回避",
+    "reason": "上升通道, RSI超买(84.5), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "605050",
+    "name": "",
+    "prob": 48,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "底部金叉",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 6.57,
+      "ma5": 13.03,
+      "ma10": 12.95,
+      "ma20": 13.13,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "突破",
+      "突破60日": "未破",
+      "rsi": 58.5
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 1,
+      "zt_days": [
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": -10
+    },
+    "signal": "❌回避",
+    "reason": "低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "600604",
+    "name": "",
+    "prob": 48,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "底部金叉",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 5.97,
+      "ma5": 5.29,
+      "ma10": 5.25,
+      "ma20": 5.3,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "突破",
+      "突破60日": "未破",
+      "rsi": 64.2
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 1,
+      "zt_days": [
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 25,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": -10
+    },
+    "signal": "❌回避",
+    "reason": "低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603165",
+    "name": "",
+    "prob": 28,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "顶部死叉",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 2.29,
+      "ma5": 14.33,
+      "ma10": 14.77,
+      "ma20": 14.2,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "突破",
+      "突破60日": "未破",
+      "rsi": 57.1
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 2,
+      "zt_days": [
+        "2026-03-09",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": -5,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "❌回避",
+    "reason": "低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "000862",
+    "name": "",
+    "prob": 28,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "顶部死叉",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 1.68,
+      "ma5": 7.65,
+      "ma10": 7.84,
+      "ma20": 7.33,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 69.2
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 3,
+      "zt_days": [
+        "2026-03-04",
+        "2026-03-09",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": -5,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "❌回避",
+    "reason": "低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "603381",
+    "name": "",
+    "prob": 23,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "下降通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 1.78,
+      "ma5": 26.71,
+      "ma10": 26.83,
+      "ma20": 27.1,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "突破",
+      "突破60日": "未破",
+      "rsi": 52.4
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 5,
+      "zt_days": [
+        "2026-01-27",
+        "2026-02-04",
+        "2026-02-11",
+        "2026-02-27",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": -10,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "❌回避",
+    "reason": "低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "300827",
+    "name": "",
+    "prob": 13,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "顶部死叉",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 3.74,
+      "ma5": 39.0,
+      "ma10": 39.78,
+      "ma20": 38.25,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "突破",
+      "突破60日": "未破",
+      "rsi": 70.9
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 1,
+      "zt_days": [
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 20.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": -10,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": -10
+    },
+    "signal": "❌回避",
+    "reason": "RSI超买(70.9), 低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "001283",
+    "name": "",
+    "prob": 13,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "下降通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 4.44,
+      "ma5": 63.49,
+      "ma10": 63.58,
+      "ma20": 64.56,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "突破",
+      "突破60日": "未破",
+      "rsi": 55.6
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 1,
+      "zt_days": [
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": -10,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": -10
+    },
+    "signal": "❌回避",
+    "reason": "低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "605099",
+    "name": "",
+    "prob": 3,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "下降通道",
+      "shape": "大阳线",
+      "vol_status": "放量",
+      "vol_ratio": 1.84,
+      "ma5": 39.84,
+      "ma10": 41.39,
+      "ma20": 42.86,
+      "ma60": null,
+      "price_vs_ma20": "MA20下方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 41.1
+    },
+    "position": {
+      "position": "1进2",
+      "height": "低位1板",
+      "zt_count": 2,
+      "zt_days": [
+        "2026-01-29",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 1
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": -30,
+      "身位调整": -10,
+      "历史统计": -17,
+      "资金活跃": 0
+    },
+    "signal": "❌回避",
+    "reason": "低位1板",
+    "lb_count": 1,
+    "industry": ""
+  },
+  {
+    "code": "000020",
+    "name": "",
+    "prob": 0,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "十字星",
+      "vol_status": "正常量",
+      "vol_ratio": 1.44,
+      "ma5": 19.46,
+      "ma10": 17.01,
+      "ma20": 15.87,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 90.3
+    },
+    "position": {
+      "position": "5进6",
+      "height": "妖股5板+",
+      "zt_count": 5,
+      "zt_days": [
+        "2026-03-16",
+        "2026-03-17",
+        "2026-03-18",
+        "2026-03-19",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 5
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 15,
+      "身位调整": -30,
+      "历史统计": -57,
+      "资金活跃": 0
+    },
+    "signal": "❌回避",
+    "reason": "上升通道, RSI超买(90.3)",
+    "lb_count": 5,
+    "industry": ""
+  },
+  {
+    "code": "600396",
+    "name": "",
+    "prob": 0,
+    "auction_pct": 0,
+    "pattern": {
+      "trend": "上升通道",
+      "shape": "阳线",
+      "vol_status": "放量",
+      "vol_ratio": 3.62,
+      "ma5": 5.22,
+      "ma10": 4.55,
+      "ma20": 3.93,
+      "ma60": null,
+      "price_vs_ma20": "MA20上方",
+      "price_vs_ma10": "MA10上方",
+      "突破20日": "未破",
+      "突破60日": "未破",
+      "rsi": 91.6
+    },
+    "position": {
+      "position": "5进6",
+      "height": "妖股5板+",
+      "zt_count": 6,
+      "zt_days": [
+        "2026-03-06",
+        "2026-03-16",
+        "2026-03-17",
+        "2026-03-18",
+        "2026-03-19",
+        "2026-03-20"
+      ],
+      "days_ago": 0,
+      "last_zt_pct": 10.0,
+      "consecutive": 5
+    },
+    "breakdown": {
+      "基础分": 50,
+      "竞价分": 10,
+      "图形分": 15,
+      "身位调整": -30,
+      "历史统计": -57,
+      "资金活跃": -10
+    },
+    "signal": "❌回避",
+    "reason": "上升通道, RSI超买(91.6)",
+    "lb_count": 5,
+    "industry": ""
+  }
+]

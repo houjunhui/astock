@@ -53,4 +53,4 @@ export declare function handleCardAction(data: unknown, cfg: ClawdbotConfig, acc
  * @param err - invoke() 或其他逻辑抛出的错误
  * @param cfg - OpenClaw 配置对象（从工具注册函数的闭包中获取）
  */
-export declare function handleInvokeErrorWithAutoAuth(err: unknown, cfg: ClawdbotConfig): Promise<any>;
+export declare function handleInvokeErrorWithAutoAuth(err: unknown, cfg: ClawdbotConfig): Promise<import("./helpers").ToolResult>;

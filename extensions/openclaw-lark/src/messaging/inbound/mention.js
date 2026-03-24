@@ -10,16 +10,26 @@
  * - Derive helpers: `mentionedBot()`, `nonBotMentions()`
  * - Format helpers for outbound text and card messages.
  */
-import { escapeRegExp } from '../converters/utils';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.mentionedBot = mentionedBot;
+exports.nonBotMentions = nonBotMentions;
+exports.extractMessageBody = extractMessageBody;
+exports.formatMentionForText = formatMentionForText;
+exports.formatMentionAllForText = formatMentionAllForText;
+exports.formatMentionForCard = formatMentionForCard;
+exports.formatMentionAllForCard = formatMentionAllForCard;
+exports.buildMentionedMessage = buildMentionedMessage;
+exports.buildMentionedCardContent = buildMentionedCardContent;
+const utils_1 = require("../converters/utils");
 // ---------------------------------------------------------------------------
 // Derive helpers (work on MentionInfo[])
 // ---------------------------------------------------------------------------
 /** Whether the bot was @-mentioned. */
-export function mentionedBot(ctx) {
+function mentionedBot(ctx) {
     return ctx.mentions.some((m) => m.isBot);
 }
 /** All non-bot mentions. */
-export function nonBotMentions(ctx) {
+function nonBotMentions(ctx) {
     return ctx.mentions.filter((m) => !m.isBot);
 }
 // ---------------------------------------------------------------------------
@@ -28,10 +38,10 @@ export function nonBotMentions(ctx) {
 /**
  * Remove all @mention placeholder keys from the message text.
  */
-export function extractMessageBody(text, allMentionKeys) {
+function extractMessageBody(text, allMentionKeys) {
     let result = text;
     for (const key of allMentionKeys) {
-        result = result.replace(new RegExp(escapeRegExp(key) + '\\s*', 'g'), '');
+        result = result.replace(new RegExp((0, utils_1.escapeRegExp)(key) + '\\s*', 'g'), '');
     }
     return result.trim();
 }
@@ -42,11 +52,11 @@ export function extractMessageBody(text, allMentionKeys) {
  * Format a mention for a Feishu text / post message.
  * @returns e.g. `<at user_id="ou_xxx">Alice</at>`
  */
-export function formatMentionForText(target) {
+function formatMentionForText(target) {
     return `<at user_id="${target.openId}">${target.name}</at>`;
 }
 /** Format an @everyone mention for text / post. */
-export function formatMentionAllForText() {
+function formatMentionAllForText() {
     return `<at user_id="all">Everyone</at>`;
 }
 // ---------------------------------------------------------------------------
@@ -56,25 +66,25 @@ export function formatMentionAllForText() {
  * Format a mention for a Feishu Interactive Card.
  * @returns e.g. `<at id=ou_xxx></at>`
  */
-export function formatMentionForCard(target) {
+function formatMentionForCard(target) {
     return `<at id=${target.openId}></at>`;
 }
 /** Format an @everyone mention for card. */
-export function formatMentionAllForCard() {
+function formatMentionAllForCard() {
     return `<at id=all></at>`;
 }
 // ---------------------------------------------------------------------------
 // Build helpers (prepend mentions to message body)
 // ---------------------------------------------------------------------------
 /** Prepend @mention tags (text format) to a message body. */
-export function buildMentionedMessage(targets, message) {
+function buildMentionedMessage(targets, message) {
     if (targets.length === 0)
         return message;
     const mentionTags = targets.map(formatMentionForText).join(' ');
     return `${mentionTags}\n${message}`;
 }
 /** Prepend @mention tags (card format) to card markdown content. */
-export function buildMentionedCardContent(targets, message) {
+function buildMentionedCardContent(targets, message) {
     if (targets.length === 0)
         return message;
     const mentionTags = targets.map(formatMentionForCard).join(' ');

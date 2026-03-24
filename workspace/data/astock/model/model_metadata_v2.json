@@ -1,0 +1,90 @@
+{
+  "version": "v2",
+  "model_path": "/home/gem/workspace/agent/workspace/data/astock/model/xgb_model_v2.pkl",
+  "lgb_model_path": "/home/gem/workspace/agent/workspace/data/astock/model/lgb_model_v2.pkl",
+  "feature_cols": [
+    "rsi",
+    "log_vr",
+    "lb",
+    "trend_up",
+    "above_ma20",
+    "jb_prob",
+    "rsi_high",
+    "rsi_low",
+    "lb_high",
+    "lb_mid",
+    "auction_chng",
+    "log_auction_bid",
+    "auction_volume_ratio",
+    "auction_high",
+    "sector_hot_count",
+    "sector_signal",
+    "market_temperature",
+    "zbgc_rate",
+    "rise_fall_ratio",
+    "stock_hist_win_rate",
+    "stock_hist_seal_rate",
+    "stock_zt_count",
+    "turnover_rate",
+    "volume_up",
+    "is_monday",
+    "is_friday"
+  ],
+  "train_date_range": "2024-01-03 ~ 2024-12-31",
+  "test_date_range": "2025-01-02 ~ 2026-03-19",
+  "train_samples": 12906,
+  "test_samples": 13322,
+  "feature_count": 26,
+  "new_feature_count": 16,
+  "cv_auc_mean": 0.7871,
+  "cv_auc_std": 0.0681,
+  "best_model": "XGBoost",
+  "metrics": {
+    "accuracy": 0.718,
+    "precision": 0.9254,
+    "recall": 0.732,
+    "f1": 0.8174,
+    "auc": 0.7534,
+    "confusion_matrix": [
+      [
+        1154,
+        678
+      ],
+      [
+        3079,
+        8411
+      ]
+    ],
+    "win_rate": 0.9254,
+    "profit_per": 0.1314
+  },
+  "backtest": {
+    "total_predictions": 13322,
+    "trading_days": 291,
+    "total_pnl": 1193.85,
+    "win_rate": 0.718,
+    "sharpe_ratio": 23.8209,
+    "max_drawdown": -0.2,
+    "pnl_per_trade": 4.1026
+  },
+  "feature_importance_xgb": {
+    "market_temperature": 0.189697727560997,
+    "zbgc_rate": 0.15846838057041168,
+    "rise_fall_ratio": 0.13396286964416504,
+    "rsi_high": 0.06297774612903595,
+    "trend_up": 0.04972520098090172,
+    "is_monday": 0.04380551725625992,
+    "rsi": 0.03459637984633446,
+    "jb_prob": 0.03188658133149147,
+    "auction_volume_ratio": 0.02778160385787487,
+    "log_auction_bid": 0.02750367671251297,
+    "lb_mid": 0.02562798000872135,
+    "auction_chng": 0.023883162066340446,
+    "is_friday": 0.023593056946992874,
+    "log_vr": 0.02322637289762497,
+    "stock_hist_seal_rate": 0.022731823846697807
+  },
+  "old_auc": 0.6097,
+  "auc_improvement": 0.1437,
+  "train_time_seconds": 14.4
+}

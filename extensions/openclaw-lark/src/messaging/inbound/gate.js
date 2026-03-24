@@ -23,10 +23,13 @@
  *     - `"open"` → any sender; `"allowlist"` → check merged list;
  *       `"disabled"` → block all senders
  */
-import { LarkClient } from '../../core/lark-client';
-import { resolveFeishuGroupConfig, resolveFeishuAllowlistMatch, isFeishuGroupAllowed, splitLegacyGroupAllowFrom, resolveGroupSenderPolicyContext, } from './policy';
-import { mentionedBot } from './mention';
-import { sendPairingReply } from './gate-effects';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.readFeishuAllowFromStore = readAllowFromStore;
+exports.checkMessageGate = checkMessageGate;
+const lark_client_1 = require("../../core/lark-client");
+const policy_1 = require("./policy");
+const mention_1 = require("./mention");
+const gate_effects_1 = require("./gate-effects");
 /** Prevent spamming the legacy groupAllowFrom migration warning. */
 let legacyGroupAllowFromWarned = false;
 // ---------------------------------------------------------------------------
@@ -36,29 +39,19 @@ let legacyGroupAllowFromWarned = false;
  * Read the pairing allowFrom store for the Feishu channel via the SDK runtime.
  */
 async function readAllowFromStore(accountId) {
-    const core = LarkClient.runtime;
+    const core = lark_client_1.LarkClient.runtime;
     return await core.channel.pairing.readAllowFromStore({
         channel: 'feishu',
         accountId,
     });
 }
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-/**
- * Read the pairing allowFrom store for the Feishu channel.
- *
- * Exported so that handler.ts can provide it as a closure to the SDK's
- * `resolveSenderCommandAuthorization` helper.
- */
-export { readAllowFromStore as readFeishuAllowFromStore };
 /**
  * Check whether an inbound message passes all access-control gates.
  *
  * The DM gate is async because it may read from the pairing store
  * and send pairing request messages.
  */
-export async function checkMessageGate(params) {
+async function checkMessageGate(params) {
     const { ctx, accountFeishuCfg, account, accountScopedCfg, log } = params;
     const isGroup = ctx.chatType === 'group';
     if (isGroup) {
@@ -71,13 +64,13 @@ export async function checkMessageGate(params) {
 // ---------------------------------------------------------------------------
 function checkGroupGate(params) {
     const { ctx, accountFeishuCfg, account, accountScopedCfg, log } = params;
-    const core = LarkClient.runtime;
+    const core = lark_client_1.LarkClient.runtime;
     // ---- Legacy compat: groupAllowFrom with chat_id entries ----
     // Older Feishu configs used groupAllowFrom with chat_ids (oc_xxx) to
     // control which groups are allowed.  The correct semantic (aligned with
     // Telegram) is sender_ids.  Detect and split so both layers still work.
     const rawGroupAllowFrom = accountFeishuCfg?.groupAllowFrom ?? [];
-    const { legacyChatIds, senderAllowFrom: senderGroupAllowFrom } = splitLegacyGroupAllowFrom(rawGroupAllowFrom);
+    const { legacyChatIds, senderAllowFrom: senderGroupAllowFrom } = (0, policy_1.splitLegacyGroupAllowFrom)(rawGroupAllowFrom);
     if (legacyChatIds.length > 0 && !legacyGroupAllowFromWarned) {
         legacyGroupAllowFromWarned = true;
         log(`feishu[${account.accountId}]: ⚠️  groupAllowFrom contains chat_id entries ` +
@@ -116,7 +109,7 @@ function checkGroupGate(params) {
         legacyGroupAdmit = true;
     }
     // ---- Per-group config (Feishu-specific fields) ----
-    const groupConfig = resolveFeishuGroupConfig({
+    const groupConfig = (0, policy_1.resolveFeishuGroupConfig)({
         cfg: accountFeishuCfg,
         groupId: ctx.chatId,
     });
@@ -136,13 +129,13 @@ function checkGroupGate(params) {
     // skip sender filtering (old semantic = "group allowed, any sender").
     const hasExplicitSenderConfig = senderGroupAllowFrom.length > 0 || (groupConfig?.allowFrom ?? []).length > 0 || groupConfig?.groupPolicy != null;
     if (!(legacyGroupAdmit && !hasExplicitSenderConfig)) {
-        const { senderPolicy, senderAllowFrom } = resolveGroupSenderPolicyContext({
+        const { senderPolicy, senderAllowFrom } = (0, policy_1.resolveGroupSenderPolicyContext)({
             groupConfig,
             defaultConfig,
             accountFeishuCfg,
             senderGroupAllowFrom,
         });
-        const senderAllowed = isFeishuGroupAllowed({
+        const senderAllowed = (0, policy_1.isFeishuGroupAllowed)({
             groupPolicy: senderPolicy,
             allowFrom: senderAllowFrom,
             senderId: ctx.senderId,
@@ -163,7 +156,7 @@ function checkGroupGate(params) {
         groupIdCaseInsensitive: true,
         requireMentionOverride: accountFeishuCfg?.requireMention,
     });
-    if (requireMention && !mentionedBot(ctx)) {
+    if (requireMention && !(0, mention_1.mentionedBot)(ctx)) {
         log(`feishu[${account.accountId}]: message in group ${ctx.chatId} did not mention bot, recording to history`);
         return {
             allowed: false,
@@ -171,7 +164,7 @@ function checkGroupGate(params) {
             historyEntry: {
                 sender: ctx.senderId,
                 body: `${ctx.senderName ?? ctx.senderId}: ${ctx.content}`,
-                timestamp: Date.now(),
+                timestamp: ctx.createTime ?? Date.now(),
                 messageId: ctx.messageId,
             },
         };
@@ -195,7 +188,7 @@ async function checkDmGate(params) {
     if (dmPolicy === 'allowlist') {
         const storeAllowFrom = await readAllowFromStore(account.accountId).catch(() => []);
         const combinedAllowFrom = [...configAllowFrom, ...storeAllowFrom];
-        const match = resolveFeishuAllowlistMatch({
+        const match = (0, policy_1.resolveFeishuAllowlistMatch)({
             allowFrom: combinedAllowFrom,
             senderId: ctx.senderId,
             senderName: ctx.senderName,
@@ -209,7 +202,7 @@ async function checkDmGate(params) {
     // dmPolicy === "pairing"
     const storeAllowFrom = await readAllowFromStore(account.accountId).catch(() => []);
     const combinedAllowFrom = [...configAllowFrom, ...storeAllowFrom];
-    const match = resolveFeishuAllowlistMatch({
+    const match = (0, policy_1.resolveFeishuAllowlistMatch)({
         allowFrom: combinedAllowFrom,
         senderId: ctx.senderId,
         senderName: ctx.senderName,
@@ -220,7 +213,7 @@ async function checkDmGate(params) {
     // Sender not yet paired — create a pairing request and notify them
     log(`feishu[${account.accountId}]: sender ${ctx.senderId} not paired, creating pairing request`);
     try {
-        await sendPairingReply({
+        await (0, gate_effects_1.sendPairingReply)({
             senderId: ctx.senderId,
             chatId: ctx.chatId,
             accountId: account.accountId,

@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "03ab253b-2906-4537-bb8a-50d79929a2e1",
+      "agentId": "main",
+      "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
+      "name": "A股每日竞价复盘",
+      "enabled": true,
+      "createdAtMs": 1774178531556,
+      "updatedAtMs": 1774274473718,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 22 * * 1-5",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "执行A股超短每日复盘系统 v3.2（竞价+板位+情绪三重优化版）。\n\n步骤：\n1. 确定今日日期 YYYYMMDD（如果今天是2026-03-23，则日期=20260323）\n2. 确定昨日日期（上一个交易日，如果今天是周一，则上周五=20260320）\n3. 运行今日预测：\n```bash\ncd /home/gem/workspace/agent/workspace && bash -c 'source .env && python3 -u astock/main.py predict $(date +%Y%m%d)'\n```\n4. 运行昨日追踪：\n```bash\ncd /home/gem/workspace/agent/workspace && bash -c 'source .env && python3 -u astock/main.py outcome YYYYMMDD_昨日'\n```\n5. 生成飞书报告，格式如下：\n\n【📊 A股每日复盘】YYYYMMDD\n\n市场情绪：[从输出读取 phase_name/涨停均/炸板率]\n竞价情绪：[从输出读取回暖确认/退潮延续等竞价前置判断]\n预测股票数：X只\n晋级分布：>30%:X只 / 15-30%:X只 / <15%:X只\n板块效应：[最多3个联动板块]\n\n【✅ 重点关注】晋级概率>20%\n[逐只列出：代码/名称/板位/晋级%/竞价信号/板位风控/续涨分布/信号]\n\n【昨日预测复盘】日期：YYYYMMDD_昨日\n实际晋级：X/X=XX%  续涨：X只(X%)  断板：X只(X%)\n准确率：XX%（共X只，正确X只，错误X只）\n[逐只列出：代码/名称/板/晋级%/判断/实际结局]\n\n【本次优化效果】\n- 竞价修正：X只受竞价数据修正（高开X只/低开断板X只）\n- 板位风控：X只受3板+风控影响（3板X只/4板+X只）\n- 竞价情绪前置：回暖确认/退潮延续\n\n6. 将报告发送到飞书（你的飞书ID: ou_12d595ebce7c7b73e926034c562b59d0），标题「📊 A股每日复盘 YYYYMMDD」\n\n注意：\n- 使用 QuickTiny API（已在.env中配置）获取真实竞价数据\n- 如果明日是周末，今日预测仍正常运行（outcome跳过）\n- 如果今日是周一，运行 outcome 上周五\n- 用message工具发送飞书消息到 user:ou_12d595ebce7c7b73e926034c562b59d0",
+        "timeoutSeconds": 600
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "feishu"
+      },
+      "state": {
+        "nextRunAtMs": 1774360800000,
+        "lastRunAtMs": 1774274400006,
+        "lastRunStatus": "ok",
+        "lastStatus": "ok",
+        "lastDurationMs": 73712,
+        "lastDelivered": true,
+        "lastDeliveryStatus": "delivered",
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "dc676ffd-0c3d-470b-9a6d-93e3c01dfcc8",
+      "agentId": "main",
+      "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
+      "name": "A股竞价模式筛选",
+      "enabled": true,
+      "createdAtMs": 1774209833478,
+      "updatedAtMs": 1774280686683,
+      "schedule": {
+        "expr": "5 25 9 * * 1-5",
+        "kind": "cron",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "执行A股竞价模式筛选任务。\n\n语气要求：冷静、敏锐、带点预期。不废话，直接给结论。\n\n步骤：\n1. 确定今日日期（从系统获取，格式YYYYMMDD）\n2. 运行竞价筛选命令：\n```bash\ncd /home/gem/workspace/agent/workspace && bash -c 'source .env && python3 -u astock/main.py predict $(date +%Y%m%d)'\n```\n\n报告格式（飞书不支持Markdown表格，用纯文本空格对齐）：\n\n【📈 竞价模式筛选】日期：YYYYMMDD HH:MM\n\n市场情绪：[从输出读取：涨停数/炸板率/跌停数/市场温度 → 判定阶段]\n\n【📊 竞价异动】\n[重点关注竞价高开/低开幅度异常的标的，以及一字板连板]\n[格式：代码 名称 板位 竞价涨幅% 晋级% 断板%]\n\n【🔥 预期最强方向】\n[根据：1)板块联动效应强 2)晋级/断板比最优 3)竞价信号健康，给出最强1-2只]\n[格式：代码 名称 板位 晋级% 断板% 预期理由]\n\n【⚠️ 规避标的】\n[明确标注：一字板高开/竞价过热/板位过高的标的，以及断板率>60%的标的]\n\n【操作建议】\n激进型：[最强1-2只]\n稳健型：[晋级>30%且断板<40%的标的]\n\n⚠️ 风险提示：[根据板位风控说明标注高风险标的]\n\n4. 用message工具发送到飞书：user:ou_12d595ebce7c7b73e926034c562b59d0，标题「📈 竞价模式筛选 YYYYMMDD」\n\n注意：如果命令无输出或失败，仍然发送消息告知状态。",
+        "timeoutSeconds": 600
+      },
+      "delivery": {
+        "mode": "announce",
+        "to": "ou_12d595ebce7c7b73e926034c562b59d0",
+        "channel": "feishu"
+      },
+      "state": {
+        "nextRunAtMs": 1774315505000,
+        "lastRunAtMs": 1774229200683,
+        "lastRunStatus": "ok",
+        "lastStatus": "ok",
+        "lastDurationMs": 321620,
+        "lastDelivered": true,
+        "lastDeliveryStatus": "delivered",
+        "consecutiveErrors": 0,
+        "runningAtMs": 1774315505003
+      }
+    },
+    {
+      "id": "9fab0afe-9ede-43bf-9fad-1dac98c72490",
+      "agentId": "main",
+      "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
+      "name": "狗仔·资讯推送（9:00）",
+      "enabled": true,
+      "createdAtMs": 1774282846640,
+      "updatedAtMs": 1774314216668,
+      "schedule": {
+        "expr": "0 9 * * 1-5",
+        "kind": "cron",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "你是狗仔，财经媒体爬虫。执行资讯推送任务。\n\n步骤：\n1. 运行HTTP爬虫: python3 /home/gem/workspace/agent/workspace/gouzai/scripts/crawler.py run\n2. 运行浏览器爬虫: python3 /home/gem/workspace/agent/workspace/gouzai/scripts/browser_crawler.py\n3. 获取最近资讯: python3 /home/gem/workspace/agent/workspace/gouzai/scripts/crawler.py recent --hours=3 --limit=20\n\n生成资讯推送格式：\n【🐕 狗仔资讯】YYYYMMDD HH:MM\n\n[利好板块]\n● [标题]\n  来源: [媒体] | 时间: [时间]\n  摘要: [内容]\n  涉及板块: [板块名称]\n\n[利空板块]\n● [标题]\n  来源: [媒体] | 时间: [时间]\n  摘要: [内容]\n\n[其他重要资讯]\n● [标题]\n  来源: [媒体] | 时间: [时间]\n\n[今日市场预期]\n根据资讯分析：今日可能走强的板块和概念\n\n用 message 工具发送到飞书: user:ou_12d595ebce7c7b73e926034c562b59d0",
+        "timeoutSeconds": 240
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "feishu",
+        "to": "ou_12d595ebce7c7b73e926034c562b59d0"
+      },
+      "state": {
+        "nextRunAtMs": 1774400400000,
+        "lastRunAtMs": 1774314000007,
+        "lastRunStatus": "ok",
+        "lastStatus": "ok",
+        "lastDurationMs": 216661,
+        "lastDelivered": true,
+        "lastDeliveryStatus": "delivered",
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "894c5397-265f-44e7-8da8-51032f929d3e",
+      "agentId": "main",
+      "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
+      "name": "狗仔·资讯推送（12:00）",
+      "enabled": true,
+      "createdAtMs": 1774282855456,
+      "updatedAtMs": 1774282855456,
+      "schedule": {
+        "expr": "0 12 * * 1-5",
+        "kind": "cron",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "你是狗仔，财经媒体爬虫。执行午间资讯推送任务。\n\n步骤：\n1. 运行HTTP爬虫: python3 /home/gem/workspace/agent/workspace/gouzai/scripts/crawler.py run\n2. 运行浏览器爬虫: python3 /home/gem/workspace/agent/workspace/gouzai/scripts/browser_crawler.py\n3. 获取最近资讯: python3 /home/gem/workspace/agent/workspace/gouzai/scripts/crawler.py recent --hours=3 --limit=20\n\n生成资讯推送格式：\n【🐕 狗仔资讯】YYYYMMDD HH:MM\n\n[利好板块]\n● [标题]\n  来源: [媒体] | 时间: [时间]\n  摘要: [内容]\n  涉及板块: [板块名称]\n\n[利空板块]\n● [标题]\n  来源: [媒体] | 时间: [时间]\n  摘要: [内容]\n\n[其他重要资讯]\n● [标题]\n  来源: [媒体] | 时间: [时间]\n\n[午后市场预期]\n根据资讯分析：下午可能走强的板块和概念\n\n用 message 工具发送到飞书: user:ou_12d595ebce7c7b73e926034c562b59d0",
+        "timeoutSeconds": 240
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "feishu",
+        "to": "ou_12d595ebce7c7b73e926034c562b59d0"
+      },
+      "state": {
+        "nextRunAtMs": 1774324800000
+      }
+    },
+    {
+      "id": "d4fff2f5-8a26-431e-82ea-115e9455c1f5",
+      "agentId": "main",
+      "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
+      "name": "狗仔·资讯推送（00:00）",
+      "enabled": true,
+      "createdAtMs": 1774282863404,
+      "updatedAtMs": 1774282863404,
+      "schedule": {
+        "expr": "0 0 * * 1-5",
+        "kind": "cron",
+        "tz": "Asia/Shanghai"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "你是狗仔，财经媒体爬虫。执行深夜资讯推送任务。\n\n步骤：\n1. 运行HTTP爬虫: python3 /home/gem/workspace/agent/workspace/gouzai/scripts/crawler.py run\n2. 运行浏览器爬虫: python3 /home/gem/workspace/agent/workspace/gouzai/scripts/browser_crawler.py\n3. 获取最新资讯: python3 /home/gem/workspace/agent/workspace/gouzai/scripts/crawler.py recent --hours=2 --limit=20\n\n生成资讯推送格式：\n【🐕 狗仔资讯】YYYYMMDD HH:MM\n\n[利好板块]\n● [标题]\n  来源: [媒体] | 时间: [时间]\n  摘要: [内容]\n  涉及板块: [板块名称]\n\n[利空板块]\n● [标题]\n  来源: [媒体] | 时间: [时间]\n  摘要: [内容]\n\n[其他重要资讯]\n● [标题]\n  来源: [媒体] | 时间: [时间]\n\n[明日市场预期]\n根据最新资讯，分析明日可能的方向\n\n用 message 工具发送到飞书: user:ou_12d595ebce7c7b73e926034c562b59d0",
+        "timeoutSeconds": 240
+      },
+      "delivery": {
+        "mode": "announce",
+        "channel": "feishu",
+        "to": "ou_12d595ebce7c7b73e926034c562b59d0"
+      },
+      "state": {
+        "nextRunAtMs": 1774368000000
+      }
+    }
+  ]
+}

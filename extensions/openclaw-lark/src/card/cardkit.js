@@ -5,11 +5,18 @@
  *
  * CardKit streaming APIs for Lark/Feishu.
  */
-import { LarkClient } from '../core/lark-client';
-import { larkLogger } from '../core/lark-logger';
-import { normalizeFeishuTarget, normalizeMessageId, resolveReceiveIdType } from '../core/targets';
-import { runWithMessageUnavailableGuard } from '../core/message-unavailable';
-const log = larkLogger('card/cardkit');
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createCardEntity = createCardEntity;
+exports.streamCardContent = streamCardContent;
+exports.updateCardKitCard = updateCardKitCard;
+exports.updateCardKitCardForAuth = updateCardKitCardForAuth;
+exports.sendCardByCardId = sendCardByCardId;
+exports.setCardStreamingMode = setCardStreamingMode;
+const lark_client_1 = require("../core/lark-client");
+const lark_logger_1 = require("../core/lark-logger");
+const targets_1 = require("../core/targets");
+const message_unavailable_1 = require("../core/message-unavailable");
+const log = (0, lark_logger_1.larkLogger)('card/cardkit');
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -37,9 +44,9 @@ function logCardKitResponse(params) {
  * Returns the card_id directly, bypassing the idConvert step.
  * The card can then be sent via IM API and streamed via CardKit.
  */
-export async function createCardEntity(params) {
+async function createCardEntity(params) {
     const { cfg, card, accountId } = params;
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
     // SDK 返回类型不完整，运行时包含 code/msg/data 字段
     const response = (await client.cardkit.v1.card.create({
         data: {
@@ -63,9 +70,9 @@ export async function createCardEntity(params) {
  * @param params.content   - The full cumulative text (not a delta).
  * @param params.sequence  - Monotonically increasing sequence number.
  */
-export async function streamCardContent(params) {
+async function streamCardContent(params) {
     const { cfg, cardId, elementId, content, sequence, accountId } = params;
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
     // SDK 返回类型不完整，运行时包含 code/msg 字段
     const resp = (await client.cardkit.v1.cardElement.content({
         data: { content, sequence },
@@ -87,9 +94,9 @@ export async function streamCardContent(params) {
  * @param params.card     - The new card JSON content.
  * @param params.sequence - Monotonically increasing sequence number.
  */
-export async function updateCardKitCard(params) {
+async function updateCardKitCard(params) {
     const { cfg, cardId, card, sequence, accountId } = params;
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
     // SDK 返回类型不完整，运行时包含 code/msg 字段
     const resp = (await client.cardkit.v1.card.update({
         data: {
@@ -104,7 +111,7 @@ export async function updateCardKitCard(params) {
         context: `seq=${sequence}, cardId=${cardId}`,
     });
 }
-export async function updateCardKitCardForAuth(params) {
+async function updateCardKitCardForAuth(params) {
     return updateCardKitCard(params);
 }
 /**
@@ -114,17 +121,17 @@ export async function updateCardKitCardForAuth(params) {
  * This links the IM message to the CardKit card entity, enabling
  * streaming updates via cardElement.content().
  */
-export async function sendCardByCardId(params) {
+async function sendCardByCardId(params) {
     const { cfg, to, cardId, replyToMessageId, replyInThread, accountId } = params;
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
     const contentPayload = JSON.stringify({
         type: 'card',
         data: { card_id: cardId },
     });
     if (replyToMessageId) {
         // 规范化 message_id，处理合成 ID（如 "om_xxx:auth-complete"）
-        const normalizedId = normalizeMessageId(replyToMessageId);
-        const response = await runWithMessageUnavailableGuard({
+        const normalizedId = (0, targets_1.normalizeMessageId)(replyToMessageId);
+        const response = await (0, message_unavailable_1.runWithMessageUnavailableGuard)({
             messageId: normalizedId,
             operation: 'im.message.reply(interactive.cardkit)',
             fn: () => client.im.message.reply({
@@ -137,11 +144,11 @@ export async function sendCardByCardId(params) {
             chatId: response?.data?.chat_id ?? '',
         };
     }
-    const target = normalizeFeishuTarget(to);
+    const target = (0, targets_1.normalizeFeishuTarget)(to);
     if (!target) {
         throw new Error(`[feishu-send] Invalid target: "${to}"`);
     }
-    const receiveIdType = resolveReceiveIdType(target);
+    const receiveIdType = (0, targets_1.resolveReceiveIdType)(target);
     const response = await client.im.message.create({
         // SDK 类型将 receive_id_type 限定为字面量联合，但运行时接受动态值
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,9 +170,9 @@ export async function sendCardByCardId(params) {
  * Must be called after streaming is complete to restore normal card
  * behaviour (forwarding, interaction callbacks, etc.).
  */
-export async function setCardStreamingMode(params) {
+async function setCardStreamingMode(params) {
     const { cfg, cardId, streamingMode, sequence, accountId } = params;
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
     // SDK 返回类型不完整，运行时包含 code/msg 字段
     const resp = (await client.cardkit.v1.card.settings({
         data: {

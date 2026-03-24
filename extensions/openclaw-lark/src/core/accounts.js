@@ -9,7 +9,18 @@
  * Each account may override any top-level Feishu config field;
  * unset fields fall back to the top-level defaults.
  */
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from 'openclaw/plugin-sdk';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getLarkAccountIds = getLarkAccountIds;
+exports.getDefaultLarkAccountId = getDefaultLarkAccountId;
+exports.getLarkAccount = getLarkAccount;
+exports.createAccountScopedConfig = createAccountScopedConfig;
+exports.getEnabledLarkAccounts = getEnabledLarkAccounts;
+exports.getLarkCredentials = getLarkCredentials;
+exports.isConfigured = isConfigured;
+const plugin_sdk_1 = require("openclaw/plugin-sdk");
+const normalizeAccountId = typeof plugin_sdk_1.normalizeAccountId === 'function'
+    ? plugin_sdk_1.normalizeAccountId
+    : (id) => id?.trim().toLowerCase() || undefined;
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
@@ -42,29 +53,29 @@ function toBrand(domain) {
  *
  * Returns `[DEFAULT_ACCOUNT_ID]` when no explicit accounts exist.
  */
-export function getLarkAccountIds(cfg) {
+function getLarkAccountIds(cfg) {
     const section = getLarkConfig(cfg);
     if (!section)
-        return [DEFAULT_ACCOUNT_ID];
+        return [plugin_sdk_1.DEFAULT_ACCOUNT_ID];
     const accountMap = getAccountMap(section);
     if (!accountMap || Object.keys(accountMap).length === 0) {
-        return [DEFAULT_ACCOUNT_ID];
+        return [plugin_sdk_1.DEFAULT_ACCOUNT_ID];
     }
     const accountIds = Object.keys(accountMap);
     // 当 accounts 存在时，如果顶层也配置了 appId/appSecret（即默认机器人），
     // 将 DEFAULT_ACCOUNT_ID 加入列表，确保顶层机器人不会被忽略。
     // 但如果 accountMap 已经包含 default，则不重复添加。
-    const hasDefault = accountIds.some((id) => id.trim().toLowerCase() === DEFAULT_ACCOUNT_ID);
+    const hasDefault = accountIds.some((id) => id.trim().toLowerCase() === plugin_sdk_1.DEFAULT_ACCOUNT_ID);
     if (!hasDefault) {
         const base = baseConfig(section);
         if (base.appId && base.appSecret) {
-            return [DEFAULT_ACCOUNT_ID, ...accountIds];
+            return [plugin_sdk_1.DEFAULT_ACCOUNT_ID, ...accountIds];
         }
     }
     return accountIds;
 }
 /** Return the first (default) account ID. */
-export function getDefaultLarkAccountId(cfg) {
+function getDefaultLarkAccountId(cfg) {
     return getLarkAccountIds(cfg)[0];
 }
 /**
@@ -73,8 +84,8 @@ export function getDefaultLarkAccountId(cfg) {
  *
  * Falls back to the default account when `accountId` is omitted or `null`.
  */
-export function getLarkAccount(cfg, accountId) {
-    const requestedId = accountId ? (normalizeAccountId(accountId) ?? DEFAULT_ACCOUNT_ID) : DEFAULT_ACCOUNT_ID;
+function getLarkAccount(cfg, accountId) {
+    const requestedId = accountId ? (normalizeAccountId(accountId) ?? plugin_sdk_1.DEFAULT_ACCOUNT_ID) : plugin_sdk_1.DEFAULT_ACCOUNT_ID;
     const section = getLarkConfig(cfg);
     if (!section) {
         return {
@@ -87,7 +98,7 @@ export function getLarkAccount(cfg, accountId) {
     }
     const base = baseConfig(section);
     const accountMap = getAccountMap(section);
-    const accountOverride = accountMap && requestedId !== DEFAULT_ACCOUNT_ID
+    const accountOverride = accountMap && requestedId !== plugin_sdk_1.DEFAULT_ACCOUNT_ID
         ? accountMap[requestedId]
         : undefined;
     const merged = accountOverride
@@ -126,8 +137,31 @@ export function getLarkAccount(cfg, accountId) {
         config: merged,
     };
 }
+/**
+ * Build an account-scoped config view for downstream helpers that read from
+ * `cfg.channels.feishu`.
+ *
+ * In multi-account mode, many runtime helpers expect the merged account config
+ * to already be exposed at `cfg.channels.feishu`. This mirrors the inbound
+ * path behavior so outbound/tooling code resolves per-account settings
+ * consistently.
+ *
+ * @param cfg - Original top-level plugin config
+ * @param accountId - Optional target account ID
+ * @returns Config with `channels.feishu` replaced by the merged account config
+ */
+function createAccountScopedConfig(cfg, accountId) {
+    const account = getLarkAccount(cfg, accountId);
+    return {
+        ...cfg,
+        channels: {
+            ...cfg.channels,
+            feishu: account.config,
+        },
+    };
+}
 /** Return all accounts that are both configured and enabled. */
-export function getEnabledLarkAccounts(cfg) {
+function getEnabledLarkAccounts(cfg) {
     const ids = getLarkAccountIds(cfg);
     const results = [];
     for (const id of ids) {
@@ -143,7 +177,7 @@ export function getEnabledLarkAccounts(cfg) {
  *
  * Returns `null` when `appId` or `appSecret` is missing.
  */
-export function getLarkCredentials(feishuCfg) {
+function getLarkCredentials(feishuCfg) {
     if (!feishuCfg)
         return null;
     const appId = feishuCfg.appId;
@@ -159,6 +193,6 @@ export function getLarkCredentials(feishuCfg) {
     };
 }
 /** Type guard: narrow `LarkAccount` to `ConfiguredLarkAccount`. */
-export function isConfigured(account) {
+function isConfigured(account) {
     return account.configured;
 }

@@ -9,11 +9,15 @@
  * logging, addressing, route resolution, thread session, and system
  * event emission.
  */
-import { resolveThreadSessionKeys } from 'openclaw/plugin-sdk';
-import { LarkClient } from '../../core/lark-client';
-import { larkLogger } from '../../core/lark-logger';
-import { isThreadCapableGroup } from '../../core/chat-info-cache';
-const log = larkLogger('inbound/dispatch-context');
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ensureRuntime = ensureRuntime;
+exports.buildDispatchContext = buildDispatchContext;
+exports.resolveThreadSessionKey = resolveThreadSessionKey;
+const plugin_sdk_1 = require("openclaw/plugin-sdk");
+const lark_client_1 = require("../../core/lark-client");
+const lark_logger_1 = require("../../core/lark-logger");
+const chat_info_cache_1 = require("../../core/chat-info-cache");
+const log = (0, lark_logger_1.larkLogger)('inbound/dispatch-context');
 // ---------------------------------------------------------------------------
 // RuntimeEnv fallback
 // ---------------------------------------------------------------------------
@@ -21,7 +25,7 @@ const log = larkLogger('inbound/dispatch-context');
  * Provide a safe RuntimeEnv fallback when the caller did not supply one.
  * Replaces the previous unsafe `runtime as RuntimeEnv` casts.
  */
-export function ensureRuntime(runtime) {
+function ensureRuntime(runtime) {
     if (runtime)
         return runtime;
     return {
@@ -37,14 +41,14 @@ export function ensureRuntime(runtime) {
  * Derive all shared values needed by downstream helpers:
  * logging, addressing, route resolution, and system event emission.
  */
-export function buildDispatchContext(params) {
+function buildDispatchContext(params) {
     const { ctx, account, accountScopedCfg } = params;
     const runtime = ensureRuntime(params.runtime);
     const log = runtime.log;
     const error = runtime.error;
     const isGroup = ctx.chatType === 'group';
     const isThread = isGroup && Boolean(ctx.threadId);
-    const core = LarkClient.runtime;
+    const core = lark_client_1.LarkClient.runtime;
     const feishuFrom = `feishu:${ctx.senderId}`;
     const feishuTo = isGroup ? `chat:${ctx.chatId}` : `user:${ctx.senderId}`;
     const envelopeFrom = isGroup ? `${ctx.chatId}:${ctx.senderId}` : ctx.senderId;
@@ -113,11 +117,11 @@ export function buildDispatchContext(params) {
  * The group info is fetched via `im.chat.get` with a 1-hour LRU cache
  * to minimise OAPI calls.
  */
-export async function resolveThreadSessionKey(params) {
+async function resolveThreadSessionKey(params) {
     const { accountScopedCfg, account, chatId, threadId, baseSessionKey } = params;
     if (account.config?.threadSession !== true)
         return undefined;
-    const threadCapable = await isThreadCapableGroup({
+    const threadCapable = await (0, chat_info_cache_1.isThreadCapableGroup)({
         cfg: accountScopedCfg,
         chatId,
         accountId: account.accountId,
@@ -127,7 +131,7 @@ export async function resolveThreadSessionKey(params) {
         return undefined;
     }
     // 使用 SDK 标准函数，保证分隔符格式与 resolveThreadParentSessionKey 兼容
-    const { sessionKey } = resolveThreadSessionKeys({
+    const { sessionKey } = (0, plugin_sdk_1.resolveThreadSessionKeys)({
         baseSessionKey,
         threadId,
         parentSessionKey: baseSessionKey,

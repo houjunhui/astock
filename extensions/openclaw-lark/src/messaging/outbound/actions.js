@@ -13,14 +13,16 @@
  * reply and attachment delivery — matching the Telegram/Discord pattern
  * where a single action handles all outbound message types.
  */
-import { extractToolSend, jsonResult, readStringParam, readReactionParams } from 'openclaw/plugin-sdk';
-import { addReactionFeishu, removeReactionFeishu, listReactionsFeishu } from './reactions';
-import { sendTextLark, sendCardLark } from './deliver';
-import { uploadAndSendMediaLark } from './media';
-import { LarkClient } from '../../core/lark-client';
-import { getEnabledLarkAccounts } from '../../core/accounts';
-import { larkLogger } from '../../core/lark-logger';
-const log = larkLogger('outbound/actions');
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.feishuMessageActions = void 0;
+const plugin_sdk_1 = require("openclaw/plugin-sdk");
+const reactions_1 = require("./reactions");
+const deliver_1 = require("./deliver");
+const media_1 = require("./media");
+const lark_client_1 = require("../../core/lark-client");
+const accounts_1 = require("../../core/accounts");
+const lark_logger_1 = require("../../core/lark-logger");
+const log = (0, lark_logger_1.larkLogger)('outbound/actions');
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -86,20 +88,20 @@ function parseCardParam(raw) {
  * are routed to the correct thread.
  */
 function readFeishuSendParams(params, toolContext) {
-    const to = readStringParam(params, 'to') ?? '';
-    const text = readStringParam(params, 'message', { allowEmpty: true }) ??
-        readStringParam(params, 'text', { allowEmpty: true }) ??
+    const to = (0, plugin_sdk_1.readStringParam)(params, 'to') ?? '';
+    const text = (0, plugin_sdk_1.readStringParam)(params, 'message', { allowEmpty: true }) ??
+        (0, plugin_sdk_1.readStringParam)(params, 'text', { allowEmpty: true }) ??
         '';
-    const mediaUrl = readStringParam(params, 'media') ??
-        readStringParam(params, 'path') ??
-        readStringParam(params, 'filePath') ??
-        readStringParam(params, 'url');
-    const fileName = readStringParam(params, 'fileName') ?? readStringParam(params, 'name');
+    const mediaUrl = (0, plugin_sdk_1.readStringParam)(params, 'media') ??
+        (0, plugin_sdk_1.readStringParam)(params, 'path') ??
+        (0, plugin_sdk_1.readStringParam)(params, 'filePath') ??
+        (0, plugin_sdk_1.readStringParam)(params, 'url');
+    const fileName = (0, plugin_sdk_1.readStringParam)(params, 'fileName') ?? (0, plugin_sdk_1.readStringParam)(params, 'name');
     // Thread routing: when targeting the current chat (or unspecified),
     // inherit thread context from SDK toolContext.
     const sameChat = !to || to === toolContext?.currentChannelId;
     const replyInThread = sameChat && Boolean(toolContext?.currentThreadTs);
-    const replyToMessageId = readStringParam(params, 'replyTo') ??
+    const replyToMessageId = (0, plugin_sdk_1.readStringParam)(params, 'replyTo') ??
         (replyInThread && toolContext?.currentMessageId ? String(toolContext.currentMessageId) : undefined);
     const card = parseCardParam(params.card);
     return {
@@ -115,17 +117,17 @@ function readFeishuSendParams(params, toolContext) {
 // ---------------------------------------------------------------------------
 // Adapter
 // ---------------------------------------------------------------------------
-export const feishuMessageActions = {
+exports.feishuMessageActions = {
     listActions: ({ cfg }) => {
-        const accounts = getEnabledLarkAccounts(cfg);
+        const accounts = (0, accounts_1.getEnabledLarkAccounts)(cfg);
         if (accounts.length === 0)
             return [];
         return Array.from(SUPPORTED_ACTIONS);
     },
     supportsAction: ({ action }) => SUPPORTED_ACTIONS.has(action),
-    supportsButtons: ({ cfg }) => getEnabledLarkAccounts(cfg).length > 0,
-    supportsCards: ({ cfg }) => getEnabledLarkAccounts(cfg).length > 0,
-    extractToolSend: ({ args }) => extractToolSend(args, 'sendMessage'),
+    supportsButtons: ({ cfg }) => (0, accounts_1.getEnabledLarkAccounts)(cfg).length > 0,
+    supportsCards: ({ cfg }) => (0, accounts_1.getEnabledLarkAccounts)(cfg).length > 0,
+    extractToolSend: ({ args }) => (0, plugin_sdk_1.extractToolSend)(args, 'sendMessage'),
     handleAction: async (ctx) => {
         const { action, params, cfg, accountId, toolContext } = ctx;
         const aid = accountId ?? undefined;
@@ -179,22 +181,22 @@ async function deliverMessage(cfg, sp, accountId, mediaLocalRoots) {
     // Send text first if both text and card/media are present.
     if (text.trim() && (card || mediaUrl)) {
         log.info(`deliverMessage: sending preceding text ` + `(${text.length} chars) before ${payloadType}`);
-        await sendTextLark({ ...sendCtx, text });
+        await (0, deliver_1.sendTextLark)({ ...sendCtx, text });
     }
     // Card path.
     if (card) {
-        const result = await sendCardLark({ ...sendCtx, card });
+        const result = await (0, deliver_1.sendCardLark)({ ...sendCtx, card });
         log.info(`deliverMessage: card sent, messageId=${result.messageId}`);
-        return jsonResult({ ok: true, messageId: result.messageId, chatId: result.chatId });
+        return (0, plugin_sdk_1.jsonResult)({ ok: true, messageId: result.messageId, chatId: result.chatId });
     }
     // Media path — uses uploadAndSendMediaLark directly to support fileName.
     if (mediaUrl) {
         return await deliverMedia(cfg, sp, accountId, mediaLocalRoots);
     }
     // Text-only path.
-    const result = await sendTextLark({ ...sendCtx, text });
+    const result = await (0, deliver_1.sendTextLark)({ ...sendCtx, text });
     log.info(`deliverMessage: text sent, messageId=${result.messageId}`);
-    return jsonResult({ ok: true, messageId: result.messageId, chatId: result.chatId });
+    return (0, plugin_sdk_1.jsonResult)({ ok: true, messageId: result.messageId, chatId: result.chatId });
 }
 /**
  * Upload and send a media file with text-link fallback on failure.
@@ -203,7 +205,7 @@ async function deliverMedia(cfg, sp, accountId, mediaLocalRoots) {
     const { to, mediaUrl, fileName, replyToMessageId, replyInThread } = sp;
     log.info(`deliverMedia: url=${mediaUrl}, fileName=${fileName ?? '(auto)'}`);
     try {
-        const result = await uploadAndSendMediaLark({
+        const result = await (0, media_1.uploadAndSendMediaLark)({
             cfg,
             to,
             mediaUrl,
@@ -214,14 +216,14 @@ async function deliverMedia(cfg, sp, accountId, mediaLocalRoots) {
             mediaLocalRoots,
         });
         log.info(`deliverMedia: sent, messageId=${result.messageId}`);
-        return jsonResult({ ok: true, messageId: result.messageId, chatId: result.chatId });
+        return (0, plugin_sdk_1.jsonResult)({ ok: true, messageId: result.messageId, chatId: result.chatId });
     }
     catch (err) {
         const errMsg = err instanceof Error ? err.message : String(err);
         log.error(`deliverMedia: upload failed for "${mediaUrl}": ${errMsg}`);
         // Fallback: send the URL with error reason as a quote above.
         log.info('deliverMedia: falling back to text link');
-        const fallback = await sendTextLark({
+        const fallback = await (0, deliver_1.sendTextLark)({
             cfg,
             to,
             text: `> ${mediaUrl}`,
@@ -229,7 +231,7 @@ async function deliverMedia(cfg, sp, accountId, mediaLocalRoots) {
             replyInThread,
             accountId,
         });
-        return jsonResult({
+        return (0, plugin_sdk_1.jsonResult)({
             ok: true,
             messageId: fallback.messageId,
             chatId: fallback.chatId,
@@ -241,13 +243,13 @@ async function deliverMedia(cfg, sp, accountId, mediaLocalRoots) {
 // Reaction handlers
 // ---------------------------------------------------------------------------
 async function handleReact(cfg, params, accountId) {
-    const messageId = readStringParam(params, 'messageId', { required: true });
-    const { emoji, remove, isEmpty } = readReactionParams(params, {
+    const messageId = (0, plugin_sdk_1.readStringParam)(params, 'messageId', { required: true });
+    const { emoji, remove, isEmpty } = (0, plugin_sdk_1.readReactionParams)(params, {
         removeErrorMessage: 'Emoji is required to remove a Feishu reaction.',
     });
     if (remove || isEmpty) {
         log.info(`react: removing emoji=${emoji || 'all'} from messageId=${messageId}`);
-        const reactions = await listReactionsFeishu({
+        const reactions = await (0, reactions_1.listReactionsFeishu)({
             cfg,
             messageId,
             emojiType: emoji || undefined,
@@ -255,7 +257,7 @@ async function handleReact(cfg, params, accountId) {
         });
         const botReactions = reactions.filter((r) => r.operatorType === 'app');
         for (const r of botReactions) {
-            await removeReactionFeishu({
+            await (0, reactions_1.removeReactionFeishu)({
                 cfg,
                 messageId,
                 reactionId: r.reactionId,
@@ -263,28 +265,28 @@ async function handleReact(cfg, params, accountId) {
             });
         }
         log.info(`react: removed ${botReactions.length} bot reaction(s)`);
-        return jsonResult({ ok: true, removed: botReactions.length });
+        return (0, plugin_sdk_1.jsonResult)({ ok: true, removed: botReactions.length });
     }
     log.info(`react: adding emoji=${emoji} to messageId=${messageId}`);
-    const { reactionId } = await addReactionFeishu({
+    const { reactionId } = await (0, reactions_1.addReactionFeishu)({
         cfg,
         messageId,
         emojiType: emoji,
         accountId,
     });
     log.info(`react: added reactionId=${reactionId}`);
-    return jsonResult({ ok: true, reactionId });
+    return (0, plugin_sdk_1.jsonResult)({ ok: true, reactionId });
 }
 async function handleReactions(cfg, params, accountId) {
-    const messageId = readStringParam(params, 'messageId', { required: true });
-    const emojiType = readStringParam(params, 'emoji');
-    const reactions = await listReactionsFeishu({
+    const messageId = (0, plugin_sdk_1.readStringParam)(params, 'messageId', { required: true });
+    const emojiType = (0, plugin_sdk_1.readStringParam)(params, 'emoji');
+    const reactions = await (0, reactions_1.listReactionsFeishu)({
         cfg,
         messageId,
         emojiType: emojiType || undefined,
         accountId,
     });
-    return jsonResult({
+    return (0, plugin_sdk_1.jsonResult)({
         ok: true,
         reactions: reactions.map((r) => ({
             reactionId: r.reactionId,
@@ -298,13 +300,13 @@ async function handleReactions(cfg, params, accountId) {
 // Delete
 // ---------------------------------------------------------------------------
 async function handleDelete(cfg, params, accountId) {
-    const messageId = readStringParam(params, 'messageId', { required: true });
+    const messageId = (0, plugin_sdk_1.readStringParam)(params, 'messageId', { required: true });
     log.info(`delete: messageId=${messageId}`);
-    const client = LarkClient.fromCfg(cfg, accountId).sdk;
+    const client = lark_client_1.LarkClient.fromCfg(cfg, accountId).sdk;
     const res = await client.im.message.delete({
         path: { message_id: messageId },
     });
     assertLarkOk(res, `delete message ${messageId}`);
     log.info(`delete: done, messageId=${messageId}`);
-    return jsonResult({ ok: true, messageId, deleted: true });
+    return (0, plugin_sdk_1.jsonResult)({ ok: true, messageId, deleted: true });
 }

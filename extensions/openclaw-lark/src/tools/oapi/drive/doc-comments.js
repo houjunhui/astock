@@ -13,53 +13,48 @@
  * - sdk.drive.v1.fileCommentReply.list - 获取回复列表
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Type } from '@sinclair/typebox';
-import { json, createToolContext, assertLarkOk, handleInvokeErrorWithAutoAuth, } from '../helpers';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.registerDocCommentsTool = registerDocCommentsTool;
+const typebox_1 = require("@sinclair/typebox");
+const helpers_1 = require("../helpers");
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
-const ReplyElementSchema = Type.Object({
-    type: Type.Union([Type.Literal('text'), Type.Literal('mention'), Type.Literal('link')]),
-    text: Type.Optional(Type.String({ description: '文本内容(type=text时必填)' })),
-    open_id: Type.Optional(Type.String({ description: '被@用户的open_id(type=mention时必填)' })),
-    url: Type.Optional(Type.String({ description: '链接URL(type=link时必填)' })),
+const ReplyElementSchema = typebox_1.Type.Object({
+    type: (0, helpers_1.StringEnum)(['text', 'mention', 'link']),
+    text: typebox_1.Type.Optional(typebox_1.Type.String({ description: '文本内容(type=text时必填)' })),
+    open_id: typebox_1.Type.Optional(typebox_1.Type.String({ description: '被@用户的open_id(type=mention时必填)' })),
+    url: typebox_1.Type.Optional(typebox_1.Type.String({ description: '链接URL(type=link时必填)' })),
 });
-const DocCommentsSchema = Type.Object({
-    action: Type.Union([Type.Literal('list'), Type.Literal('create'), Type.Literal('patch')]),
-    file_token: Type.String({
+const DocCommentsSchema = typebox_1.Type.Object({
+    action: (0, helpers_1.StringEnum)(['list', 'create', 'patch']),
+    file_token: typebox_1.Type.String({
         description: '云文档token或wiki节点token(可从文档URL获取)。如果是wiki token，会自动转换为实际文档的obj_token',
     }),
-    file_type: Type.Union([
-        Type.Literal('doc'),
-        Type.Literal('docx'),
-        Type.Literal('sheet'),
-        Type.Literal('file'),
-        Type.Literal('slides'),
-        Type.Literal('wiki'),
-    ], {
+    file_type: (0, helpers_1.StringEnum)(['doc', 'docx', 'sheet', 'file', 'slides', 'wiki'], {
         description: '文档类型。wiki类型会自动解析为实际文档类型(docx/sheet/bitable等)',
     }),
     // list action参数
-    is_whole: Type.Optional(Type.Boolean({
+    is_whole: typebox_1.Type.Optional(typebox_1.Type.Boolean({
         description: '是否只获取全文评论(action=list时可选)',
     })),
-    is_solved: Type.Optional(Type.Boolean({
+    is_solved: typebox_1.Type.Optional(typebox_1.Type.Boolean({
         description: '是否只获取已解决的评论(action=list时可选)',
     })),
-    page_size: Type.Optional(Type.Integer({ description: '分页大小' })),
-    page_token: Type.Optional(Type.String({ description: '分页标记' })),
+    page_size: typebox_1.Type.Optional(typebox_1.Type.Integer({ description: '分页大小' })),
+    page_token: typebox_1.Type.Optional(typebox_1.Type.String({ description: '分页标记' })),
     // create action参数
-    elements: Type.Optional(Type.Array(ReplyElementSchema, {
+    elements: typebox_1.Type.Optional(typebox_1.Type.Array(ReplyElementSchema, {
         description: '评论内容元素数组(action=create时必填)。' + '支持text(纯文本)、mention(@用户)、link(超链接)三种类型',
     })),
     // patch action参数
-    comment_id: Type.Optional(Type.String({
+    comment_id: typebox_1.Type.Optional(typebox_1.Type.String({
         description: '评论ID(action=patch时必填)',
     })),
-    is_solved_value: Type.Optional(Type.Boolean({
+    is_solved_value: typebox_1.Type.Optional(typebox_1.Type.Boolean({
         description: '解决状态:true=解决,false=恢复(action=patch时必填)',
     })),
-    user_id_type: Type.Optional(Type.Union([Type.Literal('open_id'), Type.Literal('union_id'), Type.Literal('user_id')])),
+    user_id_type: typebox_1.Type.Optional((0, helpers_1.StringEnum)(['open_id', 'union_id', 'user_id'])),
 });
 // ---------------------------------------------------------------------------
 // Helper functions
@@ -140,12 +135,12 @@ async function assembleCommentsWithReplies(client, file_token, file_type, commen
 // ---------------------------------------------------------------------------
 // Registration
 // ---------------------------------------------------------------------------
-export function registerDocCommentsTool(api) {
+function registerDocCommentsTool(api) {
     if (!api.config)
-        return;
+        return false;
     const cfg = api.config;
-    const { toolClient, log } = createToolContext(api, 'feishu_doc_comments');
-    api.registerTool({
+    const { toolClient, log } = (0, helpers_1.createToolContext)(api, 'feishu_doc_comments');
+    return (0, helpers_1.registerTool)(api, {
         name: 'feishu_doc_comments',
         label: 'Feishu: Doc Comments',
         description: '【以用户身份】管理云文档评论。支持: ' +
@@ -171,10 +166,10 @@ export function registerDocCommentsTool(api) {
                                 obj_type: 'wiki',
                             },
                         }, opts), { as: 'user' });
-                        assertLarkOk(wikiNodeRes);
+                        (0, helpers_1.assertLarkOk)(wikiNodeRes);
                         const node = wikiNodeRes.data?.node;
                         if (!node || !node.obj_token || !node.obj_type) {
-                            return json({
+                            return (0, helpers_1.json)({
                                 error: `failed to resolve wiki token "${p.file_token}" to document object (may be a folder node rather than a document)`,
                                 wiki_node: node,
                             });
@@ -185,7 +180,7 @@ export function registerDocCommentsTool(api) {
                     }
                     catch (err) {
                         log.error(`doc_comments: failed to convert wiki token: ${err}`);
-                        return json({
+                        return (0, helpers_1.json)({
                             error: `failed to resolve wiki token "${p.file_token}": ${err}`,
                         });
                     }
@@ -204,12 +199,12 @@ export function registerDocCommentsTool(api) {
                             user_id_type: userIdType,
                         },
                     }, opts), { as: 'user' });
-                    assertLarkOk(res);
+                    (0, helpers_1.assertLarkOk)(res);
                     const items = res.data?.items || [];
                     log.info(`doc_comments.list: found ${items.length} comments`);
                     // 组装评论和完整回复
                     const assembledItems = await assembleCommentsWithReplies(client, actualFileToken, actualFileType, items, userIdType, log);
-                    return json({
+                    return (0, helpers_1.json)({
                         items: assembledItems,
                         has_more: res.data?.has_more ?? false,
                         page_token: res.data?.page_token,
@@ -218,7 +213,7 @@ export function registerDocCommentsTool(api) {
                 // Action: create - 创建评论
                 if (p.action === 'create') {
                     if (!p.elements || p.elements.length === 0) {
-                        return json({
+                        return (0, helpers_1.json)({
                             error: 'elements 参数必填且不能为空',
                         });
                     }
@@ -242,19 +237,19 @@ export function registerDocCommentsTool(api) {
                             },
                         },
                     }, opts), { as: 'user' });
-                    assertLarkOk(res);
+                    (0, helpers_1.assertLarkOk)(res);
                     log.info(`doc_comments.create: created comment ${res.data?.comment_id}`);
-                    return json(res.data);
+                    return (0, helpers_1.json)(res.data);
                 }
                 // Action: patch - 解决/恢复评论
                 if (p.action === 'patch') {
                     if (!p.comment_id) {
-                        return json({
+                        return (0, helpers_1.json)({
                             error: 'comment_id 参数必填',
                         });
                     }
                     if (p.is_solved_value === undefined) {
-                        return json({
+                        return (0, helpers_1.json)({
                             error: 'is_solved_value 参数必填',
                         });
                     }
@@ -271,18 +266,17 @@ export function registerDocCommentsTool(api) {
                             is_solved: p.is_solved_value,
                         },
                     }, opts), { as: 'user' });
-                    assertLarkOk(res);
+                    (0, helpers_1.assertLarkOk)(res);
                     log.info(`doc_comments.patch: success`);
-                    return json({ success: true });
+                    return (0, helpers_1.json)({ success: true });
                 }
-                return json({
+                return (0, helpers_1.json)({
                     error: `未知的 action: ${p.action}`,
                 });
             }
             catch (err) {
-                return await handleInvokeErrorWithAutoAuth(err, cfg);
+                return await (0, helpers_1.handleInvokeErrorWithAutoAuth)(err, cfg);
             }
         },
     }, { name: 'feishu_doc_comments' });
-    api.logger.info?.('feishu_doc_comments: Registered feishu_doc_comments tool');
 }
