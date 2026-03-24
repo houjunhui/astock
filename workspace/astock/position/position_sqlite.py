@@ -101,6 +101,55 @@ def add_position(code, name, buy_price, qty, capital_pct, stop_loss, target_pric
     except sqlite3.IntegrityError:
         return False, False  # 同一股票当日已存在
 
+def reduce_position(code, reduce_qty, close_price, reason=""):
+    """
+    降仓（部分平仓，保留剩余持仓）
+    reduce_qty: 本次卖出的数量
+    返回: True=成功降仓, False=无持仓
+    """
+    today_s = date.today().strftime("%Y-%m-%d")
+    with get_db(write=True) as conn:
+        row = conn.execute(
+            "SELECT * FROM positions WHERE code=? AND status='持仓' ORDER BY id DESC LIMIT 1",
+            (code,)
+        ).fetchone()
+        if not row:
+            return False
+
+        buy_price = float(row['buy_price'])
+        old_qty = int(row['qty'])
+        if reduce_qty >= old_qty:
+            # 数量不足降仓，当作全平
+            reduce_qty = old_qty
+
+        remaining_qty = old_qty - reduce_qty
+        pnl_pct = round((close_price - buy_price) / buy_price * 100, 2) if buy_price > 0 else 0.0
+        pnl_amt = round((close_price - buy_price) * reduce_qty, 2)
+
+        if remaining_qty >= 100:
+            # 更新持仓记录（数量减少）
+            conn.execute(
+                "UPDATE positions SET qty=?, current_price=? WHERE id=?",
+                (remaining_qty, close_price, row['id'])
+            )
+        else:
+            # 剩余不足1手，直接清仓
+            conn.execute(
+                "UPDATE positions SET status=?, current_price=?, pnl_pct=?, pnl_amt=? WHERE id=?",
+                (f"已平仓:{reason}", close_price, pnl_pct, pnl_amt, row['id'])
+            )
+            remaining_qty = 0
+
+        # 记录本次降仓盈亏
+        conn.execute("""
+            INSERT INTO daily_pnl
+            (date, code, name, buy_price, close_price, qty, pnl_pct, pnl_amt, buy_method, reason)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (today_s, code, row['name'], buy_price, close_price,
+              reduce_qty, pnl_pct, pnl_amt, row['buy_method'], f"降仓:{reason}"))
+        return True
+
+
 def close_position(code, close_price, reason=""):
     """
     平仓（仅对持仓中标的执行，幂等）

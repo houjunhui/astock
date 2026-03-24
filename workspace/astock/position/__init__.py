@@ -7,6 +7,7 @@ from astock.position.position_sqlite import (
     init_db,
     add_position,
     close_position,
+    reduce_position,
     load_portfolio,
     get_today_trades,
     load_all_trades,
@@ -40,6 +41,7 @@ from astock.position.position_tracker import (
 
 __all__ = [
     "init_files", "init_db", "add_position", "close_position",
+    "reduce_position",
     "load_portfolio", "get_today_trades", "load_all_trades",
     "get_daily_pnl", "migrate_csv_to_sqlite",
     "calc_position", "calc_stop_loss", "calc_target",     "get_sector_momentum", "compare_sector_momentum",

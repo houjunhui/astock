@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from astock.position import (
-    init_files, load_portfolio, close_position,
+    init_files, load_portfolio, close_position, reduce_position,
     get_current_price, get_intraday_low, get_intraday_high,
     add_position, get_minute
 )
@@ -115,7 +115,7 @@ def check_position(pos):
         close = round(low * 0.995, 2)
         return {
             "action": "stop_loss",
-            "reason": f"触及止损({low}<={effective_stop})【保本{',锁定5%' if pnl_pct>=10 else ''}】",
+            "reason": f"触及止损({low}<={effective_stop}){'【锁定5%利润】' if pnl_pct>=10 else ('【保本】' if pnl_pct>=5 else '')}",
             "close_price": close,
         }
 
@@ -161,18 +161,24 @@ def check_position(pos):
             "action": "full_close",
             "reason": f"浮亏{pnl_pct:.1f}%>=-5%清仓",
             "close_price": close,
-            "reduce_qty": qty,
         }
     elif pnl_pct <= -params.get('reduce_threshold', 0.02) * 100:
-        # 降仓50%
+        # 降仓50%（剩余不足1手时直接清仓）
         half_qty = qty // 2
+        close = round(cur * 0.995, 2)
         if half_qty >= 100:
-            close = round(cur * 0.995, 2)
             return {
                 "action": "reduce",
                 "reason": f"浮亏{pnl_pct:.1f}%降仓50%",
                 "close_price": close,
                 "reduce_qty": half_qty,
+            }
+        else:
+            # 剩余不足1手，直接清仓
+            return {
+                "action": "full_close",
+                "reason": f"浮亏{pnl_pct:.1f}%清仓（不足1手）",
+                "close_price": close,
             }
 
     return None
@@ -207,12 +213,13 @@ def monitor():
                            "qty": qty, "pnl_pct": pnl_pct})
 
         elif action == "reduce":
-            # 降仓：记录一次半仓平仓
-            close_position(code, cur, result["reason"])
+            # 降仓：使用reduce_position保留剩余持仓
+            rqty = result["reduce_qty"]
+            reduce_position(code, rqty, cur, result["reason"])
             reduced.append({**result, "code": code, "name": name,
                             "buy_price": buy_price, "close_price": cur,
-                            "reduce_qty": result["reduce_qty"],
-                            "remaining_qty": qty - result["reduce_qty"],
+                            "reduce_qty": rqty,
+                            "remaining_qty": qty - rqty,
                             "pnl_pct": (cur - buy_price) / buy_price * 100 if buy_price > 0 else 0})
 
     # 预警：浮亏持仓（3%≤浮亏<止损线）
