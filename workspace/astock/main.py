@@ -133,6 +133,8 @@ def run_predict(date):
     # ===== 4. 一次性获取所有竞价数据（避免重复API调用） =====
     auction_by_code = {}
     try:
+        from astock.cache_manager import apply_cache
+        apply_cache()
         from quicktiny import get_auction_for_codes
         auction_raw = get_auction_for_codes(all_codes, delay=2.2)
         for code, ad in auction_raw.items():

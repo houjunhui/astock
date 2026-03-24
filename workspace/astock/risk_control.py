@@ -16,6 +16,9 @@
 import sys
 sys.path.insert(0, '/home/gem/workspace/agent/workspace')
 
+from astock.cache_manager import apply_cache
+apply_cache()  # 缓存优先
+
 from astock.quicktiny import (
     get_limit_stats, get_market_overview_fixed,
     get_ladder, get_broken_limit_up

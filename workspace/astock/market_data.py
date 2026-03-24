@@ -73,6 +73,8 @@ def get_market_sentiment(date):
     qt_date = f"{date[:4]}-{date[4:6]}-{date[6:8]}"
     dt_count, zbgc_count = 0, 0
     try:
+        from astock.cache_manager import apply_cache
+        apply_cache()
         from quicktiny import get_auction
         ad = get_auction(qt_date)
         mb = ad.get('marketBreadth', {}) if ad else {}
