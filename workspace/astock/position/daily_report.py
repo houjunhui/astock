@@ -4,10 +4,13 @@
 """
 
 import sys; sys.path.insert(0, '.')
-from astock.position import (
-    init_files, add_position, update_positions,
-    get_portfolio_status, format_position_report,
-    calc_position, calc_stop_loss, calc_target,
+from astock.position.position_sqlite import init_files, add_position
+from astock.position.position_tracker import (
+    get_current_price, get_intraday_low, get_intraday_high,
+    get_minute, update_positions, get_portfolio_status, format_position_report
+)
+from astock.position.position_sizer import calc_position, calc_stop_loss, calc_target
+from astock.position.sector_tracker import (
     get_sector_momentum, compare_sector_momentum,
     format_sector_report
 )

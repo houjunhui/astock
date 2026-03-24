@@ -12,15 +12,21 @@ from astock.position.position_tracker import PORTFOLIO_FILE
 
 
 def load_all_trades():
-    """加载所有交易记录"""
-    trades = []
-    if not PORTFOLIO_FILE.exists():
-        return trades
-    with open(PORTFOLIO_FILE, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f, lineterminator="\n")
-        for row in reader:
-            trades.append(row)
-    return trades
+    """从SQLite加载所有已平仓交易（字段统一转为字符串兼容处理）"""
+    try:
+        from astock.position.position_sqlite import load_all_trades as _sqlite_load
+        rows = _sqlite_load()
+        # SQLite返回float，转换为字符串统一处理
+        str_rows = []
+        for r in rows:
+            r = dict(r)
+            for k in ["pnl_pct", "pnl_amt", "buy_price", "close_price", "qty"]:
+                if k in r and isinstance(r[k], (int, float)):
+                    r[k] = str(r[k])
+            str_rows.append(r)
+        return str_rows
+    except Exception:
+        return []
 
 
 def query_trades(code=None, start_date=None, end_date=None,
@@ -130,11 +136,63 @@ def statistics(start_date=None, end_date=None):
         pnl_val = float(t.get("pnl_amt", 0)) if t.get("pnl_amt", "").replace(".", "").replace("-", "").isdigit() else 0
         by_phase[phase]["pnl"] += pnl_val
 
+    # ── 最大回撤 ──
+    # 按日期排序，计算累计盈亏曲线，找最大回落
+    sorted_trades = sorted(closed, key=lambda t: t.get("buy_date", ""))
+    cumulative = 0.0
+    peak = 0.0
+    max_drawdown = 0.0
+    for t in sorted_trades:
+        pnl_val = float(t.get("pnl_amt", 0)) if t.get("pnl_amt", "").replace(".", "").replace("-", "").isdigit() else 0
+        cumulative += pnl_val
+        if cumulative > peak:
+            peak = cumulative
+        dd = peak - cumulative
+        if dd > max_drawdown:
+            max_drawdown = dd
+
+    # ── 连续亏损次数 ──
+    consecutive = 0
+    max_consecutive = 0
+    for t in sorted_trades:
+        if float(t.get("pnl_pct", 0)) < 0:
+            consecutive += 1
+            if consecutive > max_consecutive:
+                max_consecutive = consecutive
+        else:
+            consecutive = 0
+
+    # ── 可成交率 ──
+    # 从 daily_pnl 读取实际成交笔数 / 买入信号数（后者暂无，以总持仓记录估算）
+    try:
+        from astock.position.position_sqlite import get_today_stats, get_db
+        total_filled = len(list(get_db().execute("SELECT id FROM positions")).fetchall())
+        # 简化：可成交率 = 有平仓记录的交易日数 / 交易天数
+        filled_days = len(set(t["buy_date"] for t in closed)) if closed else 0
+        signal_days = len(set(t.get("buy_date", "") for t in closed)) if closed else 0
+        fill_rate = round(filled_days / signal_days * 100, 1) if signal_days else 0
+    except Exception:
+        fill_rate = 0.0
+
+    # ── 炸板亏损占比 ──
+    broken_limit_loss = sum(
+        float(t.get("pnl_amt", 0)) for t in closed
+        if "炸板" in t.get("status", "") or "炸板" in t.get("notes", "")
+        and float(t.get("pnl_pct", 0)) < 0
+    )
+    total_loss = sum(float(t.get("pnl_amt", 0)) for t in losses
+                     if t.get("pnl_amt", "").replace(".", "").replace("-", "").isdigit())
+    broken_loss_ratio = round(abs(broken_limit_loss) / abs(total_loss) * 100, 1) if total_loss < 0 and broken_limit_loss < 0 else 0.0
+
     return {
         "total": total, "win": len(wins), "lose": len(losses),
         "win_rate": round(len(wins) / total * 100, 1) if total else 0,
         "total_pnl_amt": round(total_pnl, 0),
         "avg_pnl_pct": round(avg_pnl, 2),
+        "max_drawdown": round(max_drawdown, 0),
+        "max_consecutive_loss": max_consecutive,
+        "fill_rate": fill_rate,
+        "broken_limit_loss_ratio": broken_loss_ratio,
         "by_tier": dict(by_tier),
         "by_level": dict(by_level),
         "by_phase": dict(by_phase),
@@ -151,6 +209,12 @@ def format_statistics(stats, date_range=""):
 
     lines.append(f"总交易: {stats['total']}笔 | 胜: {stats['win']} 负: {stats['lose']} | 胜率: {stats['win_rate']}%")
     lines.append(f"总盈亏: {stats['total_pnl_amt']:+,.0f}元 | 均盈亏: {stats['avg_pnl_pct']:+.2f}%")
+    lines.append("")
+    lines.append("【核心指标】")
+    lines.append(f"  最大回撤: {stats.get('max_drawdown', 0):+,.0f}元")
+    lines.append(f"  最大连亏: {stats.get('max_consecutive_loss', 0)}次")
+    lines.append(f"  可成交率: {stats.get('fill_rate', 0):.1f}%")
+    lines.append(f"  炸板亏损占比: {stats.get('broken_limit_loss_ratio', 0):.1f}%")
     lines.append("")
 
     # 按评级

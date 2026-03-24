@@ -112,12 +112,12 @@ def calc_stop_loss(buy_price, method="fixed", param=None):
     if not buy_price or buy_price <= 0:
         return 0.0
     if method == "fixed":
-        pct = param if param is not None else 0.03
+        pct = param if param is not None else 0.04
         return round(buy_price * (1 - pct), 2)
     elif method == "recent_low":
         # 近N日最低点（需要kline数据，这里简化）
         return param or round(buy_price * 0.97, 2)
-    return round(buy_price * 0.97, 2)
+    return round(buy_price * 0.96, 2)
 
 
 def calc_target(buy_price, method="fixed", param=None):
@@ -127,7 +127,7 @@ def calc_target(buy_price, method="fixed", param=None):
     if not buy_price or buy_price <= 0:
         return 0.0
     if method == "fixed":
-        pct = param if param is not None else 0.10
+        pct = param if param is not None else 0.09
         return round(buy_price * (1 + pct), 2)
     return round(buy_price * 1.10, 2)
 
