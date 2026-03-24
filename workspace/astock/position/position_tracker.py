@@ -155,13 +155,23 @@ def close_position(code, close_price, reason=""):
     updated = False
     for row in all_rows:
         if row["code"] == code and row["status"] in ("持仓", "持仓中"):
-            buy_price = float(row["buy_price"])
-            pnl_pct = (float(close_price) - buy_price) / buy_price * 100
+            bp_str = row.get("buy_price", "0") or "0"
+            qty_str = row.get("qty", "0") or "0"
+            try:
+                buy_price = float(bp_str)
+                qty = int(float(qty_str))
+            except (ValueError, ZeroDivisionError):
+                buy_price = 0.0
+                qty = 0
+            if buy_price > 0:
+                pnl_pct = (float(close_price) - buy_price) / buy_price * 100
+            else:
+                pnl_pct = 0.0
+            pnl_amt = (float(close_price) - buy_price) * qty
             row["current_price"] = close_price
             row["pnl_pct"] = round(pnl_pct, 2)
-            row["status"] = f"已平仓:{reason}"
-            pnl_amt = (float(close_price) - float(row["buy_price"])) * int(row["qty"])
             row["pnl_amt"] = str(round(pnl_amt, 2))
+            row["status"] = f"已平仓:{reason}"
             row["notes"] = f"{row['notes']} | 平仓:{reason}" if row["notes"] else f"平仓:{reason}"
             updated = True
     
