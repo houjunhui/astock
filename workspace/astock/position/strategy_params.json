@@ -112,7 +112,22 @@
         "consecutive_loss_stop": 2,
         "week_drawdown_stop": 50000,
         "profit_protect_10": 0.5,
-        "profit_protect_20": 0.3
+        "profit_protect_20": 0.3,
+        "kelly_win_rate_S": 0.4,
+        "kelly_win_rate_A": 0.3,
+        "kelly_win_rate_B": 0.2,
+        "kelly_avg_win_pct": 9.0,
+        "kelly_avg_loss_pct": 4.0,
+        "risk_per_stock": 0.01,
+        "kelly_max_fraction": 0.5,
+        "emotion_weight_lb": 0.2,
+        "emotion_weight_ratio": 0.2,
+        "emotion_weight_broken": 0.15,
+        "emotion_weight_yesterday": 0.15,
+        "emotion_weight_sector": 0.1,
+        "emotion_weight_rise": 0.1,
+        "emotion_weight_fall": 0.05,
+        "emotion_weight_index": 0.05
       },
       "stats": {},
       "rollback_count": 2

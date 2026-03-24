@@ -92,3 +92,15 @@
 **一字板规则过严（20260324）**：中利集团一字板高开>9%warn，但封板率58%≠断板；修复：联合封板率判断（<70% warn，70-85% susp，≥85% ok）
 **竞价买入方式（20260324）**：0-3%竞价买，3-7%等回调50%，>7%等回调75%+放弃线；一字板无法买入
 **quicktiny板块接口**：get_concept_ranking和get_sector_analysis均返回空数据，暂无全板块成分股接口
+
+**T+1规则升级（20260324）**：今日新仓不允许盘中/收盘平仓，只能T+1及之后平仓；buy_date等于今天→静默跳过
+**持仓周期管理（20260324）**：龙3板+持2夜max_days=2，普通持1夜max_days=1；超期强制平仓
+**流动性约束（20260324）**：一字板跳过，竞价挂单<5000手跳过；positions表需max_days字段
+**成本体系（20260324）**：买入佣金0.03%+滑点0.5%；卖出佣金0.03%+印花税0.1%+滑点0.5%
+**alpha因子体系v1（20260324）**：分层股票池(astock/pools/)；连板梯队分档(board_tier.py)；ML模型骨架(ml_model.py)；黑名单机制
+**board_tier阶段权限**：HIGH梯队6板+仅主升期开放，分歧/退潮/冰点均关闭
+
+### 今日教训
+- **INSERT列值不匹配**：add_position添加max_days字段后 VALUES未同步添加，导致sqlite3.OperationalError: 16 values for 17 columns
+- **py_compile不查运行时**：语法OK不等于逻辑OK，必须跑end-to-end验证
+- **迁移脚本同步**：CSV迁移SQLite时也要同步添加新字段（max_days）
