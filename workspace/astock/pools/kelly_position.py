@@ -116,7 +116,14 @@ def calc_single_position(code, tier, win_rate, avg_win_pct, avg_loss_pct,
 
 def allocate_positions(candidates, phase, sector_map):
     """
-    多只标的仓位分配（优先级S>A>B）
+    多只标的仓位分配（优先级S>A>B，超限按评级等比例压缩）
+    
+    分配规则：
+    1. 按优先级排序（S最优先）
+    2. 按凯利公式计算每只仓位
+    3. 若总仓位超过阶段上限，按评级优先级从低到高等比例压缩
+       B级先压缩 → 不够再压缩A级 → 最后压缩S级
+    4. 板块集中度：单板块仓位≤30%，超出按持仓比例压缩
     
     candidates: [{code, tier, win_rate, avg_win_pct, avg_loss_pct, stop_loss_pct}]
     sector_map: {sector: used_cap_pct} 板块已用仓位
@@ -157,11 +164,23 @@ def allocate_positions(candidates, phase, sector_map):
             cand["stop_loss_pct"], phase, sector_used
         )
         
-        # 如果加上这只会超过总上限，按比例压缩
+        # 超出阶段上限：从B级开始等比例压缩
         if total_cap + pos > max_total:
-            pos = max(0, max_total - total_cap)
-            if pos < 0.005:
-                reason = "总仓位不足，压缩至0"
+            # 优先压缩低评级
+            if tier == "B":
+                pos = min(pos, max(0, max_total - total_cap))
+                reason = f"B级等比例压缩至{tier_cap:.0%}"
+            elif tier == "A":
+                # 检查B级是否还有空间
+                b_alloc = next((a["position_pct"] for a in allocated if a["tier"]=="B"), 0)
+                if b_alloc > 0.05:
+                    reason = "B级尚有空间，A级跳过"
+                    continue  # 跳过，等下次或压缩后重分配
+                pos = min(pos, max(0, max_total - total_cap))
+                reason = f"A级压缩至{tier_cap:.0%}"
+            else:
+                pos = min(pos, max(0, max_total - total_cap))
+                reason = f"S级压缩至{max_total:.0%}" if pos > 0 else "总仓位已满"
         
         cand["position_pct"] = pos
         cand["reason"] = reason

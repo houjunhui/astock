@@ -116,7 +116,7 @@ def risk_check_overnight(position, date_str):
     返回: (action: str, reason: str, close_price: float)
         action=None → 无需操作
     """
-    from astock.quicktiny import get_current_price
+    from astock.position import get_current_price
     
     code = position["code"]
     buy_price = float(position["buy_price"])
@@ -136,12 +136,20 @@ def risk_check_overnight(position, date_str):
         close_price = round(cur * 0.995, 2)  # 滑点
         return "熔断平仓", f"熔断触发，强制平仓", close_price
     
-    # ── R2: 竞价低开 ──────────────────────────────────────
-    # 次一交易日低开超3% → 竞价直接平
-    auction_data = position.get("auction_chg", 0)
-    if auction_data < -3.0:
+    # ── R2: 竞价低开（有条件平仓，非绝对）────────────────
+    # 低开>3%但竞价量能充足（>昨日50%）：视为弱转强，保留观察
+    # 低开>3%且量能不足：竞价直接平
+    auction_chg = position.get("auction_chg", 0)
+    auction_amount = position.get("auction_amount", 0)
+    yesterday_amount = position.get("yesterday_amount", 0)
+    
+    if auction_chg < -3.0:
+        # 有量能承接：弱转强信号，暂不平仓
+        if yesterday_amount > 0 and auction_amount >= yesterday_amount * 0.5:
+            return None, "", 0.0  # 保留，继续观察
+        # 无量能承接：平仓
         close_price = round(cur * 0.995, 2)
-        return "竞价低开", f"竞价低开{auction_data:.1f}%，直接平仓", close_price
+        return "竞价低开", f"竞价低开{auction_chg:.1f}%+量能不足，竞价平仓", close_price
     
     # ── R3: 炸板回落 ──────────────────────────────────────
     # 今日涨停后炸板
@@ -156,6 +164,15 @@ def risk_check_overnight(position, date_str):
             close_price = round(cur * 0.995, 2)
             return "炸板回落", f"炸板回落{broken_pct:.1f}%>{threshold}%阈值，强制平仓", close_price
     
+    # ── R4a: 初始止损线（任何持仓全程生效，独立于保本止损）──
+    # 持仓只要下跌超过止损线，立即触发，不依赖浮盈条件
+    stop_loss_pct = position.get("stop_loss_pct", 0.04)  # 默认4%
+    if stop_loss_pct > 0:
+        loss_from_buy = (buy_price - cur) / buy_price * 100
+        if loss_from_buy >= stop_loss_pct * 100:  # 亏损超过止损线%
+            close_price = round(cur * 0.995, 2)
+            return "初始止损", f"初始止损触发，亏损{loss_from_buy:.1f}%≥{stop_loss_pct*100:.0f}%阈值", close_price
+
     # ── R4: 保本止损 ──────────────────────────────────────
     profit_pct = (cur - buy_price) / buy_price * 100
     if profit_pct >= 20:
@@ -205,7 +222,8 @@ def risk_tag_today_new(position, date_str):
     返回: (risk_level: str, reasons: list)
         risk_level: "extreme"/"high"/"medium"/"low"
     """
-    from astock.quicktiny import get_current_price, get_market_overview_fixed
+    from astock.position import get_current_price
+    from astock.quicktiny import get_market_overview_fixed
     
     code = position["code"]
     buy_price = float(position["buy_price"])

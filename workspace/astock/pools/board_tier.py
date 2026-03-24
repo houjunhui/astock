@@ -19,18 +19,18 @@ S级顶级标的顶尖标准:
 
 # ── 连板梯队定义 ──────────────────────────────────────────────────
 TIER_DEFINITIONS = {
-    "low": {      # 1-2板低位
+    "low": {      # 1-2板低位（首板龙头可达9%+高开）
         "lb_range": (1, 2),
         "auction_min": 0.0,
-        "auction_max": 7.0,
+        "auction_max": 9.0,   # 加宽：首板龙头高开8%+是强抢筹信号
         "allowed_phases": ("主升", "发酵", "分歧", "退潮"),
         "max_tier": "A",
         "position_cap": 0.20,
     },
     "mid": {      # 3-5板中位
         "lb_range": (3, 5),
-        "auction_min": 3.0,
-        "auction_max": 8.0,
+        "auction_min": 2.0,
+        "auction_max": 10.0,
         "allowed_phases": ("主升", "发酵", "分歧"),
         "max_tier": "S",
         "position_cap": 0.30,

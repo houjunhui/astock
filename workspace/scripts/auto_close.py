@@ -25,8 +25,20 @@ def auto_close(date_str):
     closed = []
 
     for pos in positions:
-        # ── T+1 规则：今日新仓不允许在今日平仓 ──
+        # ── 高风险强制平仓（优先级高于T+1）──
+        risk_tag = pos.get("risk_tag", "low")
         buy_date = pos.get("buy_date", "")
+        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+        if risk_tag in ("extreme", "high") and buy_date == yesterday:
+            # 昨日高风险仓：次日开盘前强制平仓
+            cur = float(pos.get("current_price", 0)) or float(pos["buy_price"])
+            close_price = round(cur * 0.995, 2)
+            reason = f"高风险仓强制平仓({risk_tag})"
+            close_position(code, close_price, reason)
+            closed.append({"code": code, "name": name, "reason": reason, "price": close_price})
+            continue
+
+        # ── T+1 规则：今日新仓不允许在今日平仓 ──
         if buy_date and buy_date == today:
             # 今日新开仓，不得在今日平仓 → 纳入隔夜仓
             continue

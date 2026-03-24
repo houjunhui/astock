@@ -198,22 +198,23 @@ def monitor():
     if positions is None:
         return [], [], ["⚠️ 持仓加载失败"]
 
-    closed = []
-    reduced = []
-    alerts = []
-
-    # ── T+1 规则：今日新仓不允许在盘中平仓 ──
+    # ── T+1 规则：今日新仓仅预警，隔夜仓执行全部风控 ──
     today = date.today().strftime("%Y%m%d")
-
-    closed = []
-    reduced = []
-    alerts = []
-
-    # ── T+1 规则：今日新仓不允许在盘中平仓 ──
-    today = date.today().strftime("%Y%m%d")
+    today_new_risky = []  # [(code, name, risk_level)]
 
     for pos in positions:
         buy_date = pos.get("buy_date", "")
+        is_today = (buy_date == today)
+        
+        # ── 当日新仓：风险标记 ──
+        if is_today:
+            risk_level = pos.get("risk_tag", "low")
+            if risk_level in ("extreme", "high"):
+                today_new_risky.append((pos["code"], pos["name"], risk_level))
+                alerts.append(f"⚠️ 当日新仓高风险{risk_level.upper()}：{pos['code']} {pos['name']}，次日竞价强制平仓")
+            continue  # 当日新仓不参与风控检查
+
+        # ── 隔夜仓：执行全部7层风控 ──
         if buy_date and buy_date == today:
             # 今日新开仓，T+1限制，不得触发平仓
             continue
