@@ -169,7 +169,7 @@ def auction_ok(code, name, lb, jb_prob, vr=None, sector_hot=False, phase="退潮
 
 def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
                  zt_yesterday=False, phase="退潮", dz_risks=None,
-                 ml_prob=None, limit_up_suc_rate=None):
+                 ml_prob=None, limit_up_suc_rate=None, turnover=None):
     """
     竞价标的评级 S/A/B/C，直接绑定仓位。
 
@@ -290,6 +290,20 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
     else:
         details["D5_封板率"] = "susp"
 
+    # ── S级严格条件：4板+，竞价0-3%，封板率≥85%，RSI<70，换手≥2%，量比≥5 ──
+    is_strict_s = (
+        lb >= 4
+        and auction_chng is not None
+        and 0 <= auction_chng <= 3
+        and limit_up_suc_rate is not None
+        and limit_up_suc_rate >= 0.85
+        and not any("RSI" in r or "超买" in r for r in dz_risks)
+        and turnover is not None
+        and turnover >= 2.0
+        and vr is not None
+        and vr >= 5.0
+    )
+
     # ---- 综合评级 ----
     warn_count = sum(1 for v in details.values() if v == "warn")
     susp_count = sum(1 for v in details.values() if v == "susp")
@@ -302,22 +316,22 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
         position = 0.30  # 轻仓
     elif susp_count == 1:
         tier = "A"
-        position = 0.50  # 半仓
-    else:
+        position = 0.50
+    elif is_strict_s and susp_count == 0 and warn_count == 0:
         tier = "S"
-        position = 1.00  # 正常仓位
+        position = 1.00  # 严格S级
+    else:
+        tier = "B"
+        position = 0.30
 
-    # 市场阶段加成
+    # 市场阶段加成（仅调整A级/B级的phase因子，不改仓位上限）
     if phase in ("退潮", "恐慌") and tier in ("S", "A"):
-        position = position * 0.70  # 退潮期降仓位30%
         tier = f"{tier}*"
     elif phase == "主升" and tier in ("S", "A"):
-        position = min(position * 1.20, 1.0)  # 主升期可加20%
         tier = f"{tier}+"
 
-    # ── 退潮期高位板强制否决 ──────────────────────────────────
-    # 教训：大胜达3板+退潮期→误判；退潮期高位板晋级率极低，直接降C
-    if phase in ("退潮", "恐慌") and lb >= 3 and tier != "C":
+    # ── 退潮期高位板强制否决 ──
+    if phase in ("退潮", "恐慌") and lb >= 3 and tier not in ("C",):
         tier = "C"
         position = 0
         veto_reasons.append(f"退潮期{lb}板→晋级率低→放弃")

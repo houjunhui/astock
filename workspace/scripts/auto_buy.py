@@ -8,6 +8,7 @@ P0修复：
 - 情绪周期仓位上限动态调整
 """
 import sys, os, time, csv
+import signal
 from datetime import datetime, date, timedelta
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -30,9 +31,22 @@ PHASE_POSITIONS = {
 }
 
 def get_market_phase(date_str):
-    """情绪周期判断：涨停溢价率+连板高度+炸板率+红盘占比"""
+    """情绪周期判断（带超时保护）"""
     try:
-        mo = get_market_overview_fixed(date_str)
+        import signal
+        class TimeoutError(Exception):
+            pass
+        def _handler(sig, frame):
+            raise TimeoutError()
+        old_h = signal.signal(signal.SIGALRM, _handler)
+        signal.alarm(5)
+        try:
+            mo = get_market_overview_fixed(date_str)
+        except TimeoutError:
+            mo = {}
+        finally:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_h)
         temp = mo.get("market_temperature", 50)
         zt = mo.get("zt_count", 0)
         dt = mo.get("dt_count", 0)
@@ -52,7 +66,7 @@ def get_market_phase(date_str):
             return "冰点", temp
         else:
             return "分歧", temp
-    except:
+    except Exception:
         return "主升", 50
 
 
@@ -61,7 +75,7 @@ def prev_trading_day(date_str):
     return (d - timedelta(days=1)).strftime("%Y%m%d")
 
 
-def retry_api(callable_fn, retries=3, delay=5):
+def retry_api(callable_fn, retries=3, delay=2):
     """接口超时重试"""
     for attempt in range(retries):
         try:
@@ -108,10 +122,10 @@ def filter_candidates(candidates, phase):
             skip_reasons[code].append("科创/创业/北交")
             continue
 
-        # 次新股（上市<20日，精确判断）
+        # 次新股（上市<20日，用ladder的continue_days判断）
         try:
-            mins = get_minute(code, ndays=5)
-            if mins and len(mins) < 20:  # 不足20个交易日
+            cont_days = y_stocks.get(code, {}).get("continue_days", 0) or yd.get("continue_days", 0)
+            if cont_days and cont_days < 20:
                 skip_reasons[code].append("次新<20日")
                 continue
         except:
@@ -164,6 +178,19 @@ def auto_buy(date_str):
     today = date_str.replace("-", "")
     yday_str = prev_trading_day(today)
 
+    # ── 0. 亏损/盈利保护（尽早检查，尽早退出）──
+    phase, temp = get_market_phase(today)
+    max_total = PHASE_POSITIONS.get(phase, 0.70)
+    from astock.position.query import statistics
+    from astock.position import get_daily_pnl
+    try:
+        stats = statistics()
+        streak = stats.get("max_consecutive_loss", 0)
+        if streak >= 2:
+            return [], phase, temp, today_str(date_str)
+    except Exception:
+        pass
+
     # ── 1. 获取昨日ladder（重试3次）──
     ladder_y = retry_api(lambda: get_ladder(yday_str))
     if not ladder_y or not ladder_y.get("boards"):
@@ -178,6 +205,7 @@ def auto_buy(date_str):
                 "industry": s.get("industry", ""),
                 "open_num": s.get("open_num"),
                 "continue_num": s.get("continue_num", 1),
+                "continue_days": s.get("continue_days", 0),
                 "limit_up_type": s.get("limit_up_type", ""),
                 "limit_up_suc_rate": s.get("limit_up_suc_rate"),
             }
@@ -185,9 +213,7 @@ def auto_buy(date_str):
     # ── 2. 获取竞价数据（重试3次）──
     ads = retry_api(lambda: get_auction_for_codes(list(y_stocks.keys()), delay=0))
 
-    # ── 3. 判断情绪周期 + 仓位上限 ──
-    phase, temp = get_market_phase(today)
-    max_total = PHASE_POSITIONS.get(phase, 0.70)
+    # ── 3. 仓位上限（已有）──
     existing = load_portfolio()
     existing_codes = {p["code"] for p in existing}
 
@@ -217,7 +243,8 @@ def auto_buy(date_str):
             code=code, name=name, lb=lb, jb_prob=jb_prob,
             vr=vr, auction_chng=chg, phase=phase,
             zt_yesterday=zt, dz_risks=None,
-            limit_up_suc_rate=yd.get("limit_up_suc_rate")
+            limit_up_suc_rate=yd.get("limit_up_suc_rate"),
+            turnover=turnover
         )
 
         candidates.append({
@@ -251,13 +278,40 @@ def auto_buy(date_str):
     tier_order = {"S": 0, "A": 1, "B": 2}
     candidates.sort(key=lambda x: tier_order.get(x["tier"], 3))
 
-    # ── 8. 依次买入 ──
+    # ── 8. 亏损保护（单周回撤≥5万降仓）──
+    try:
+        week_start = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y%m%d")
+        week_pnl = sum(float(d.get("pnl_amt", 0)) for d in get_daily_pnl(week_start))
+        if week_pnl <= -50_000:
+            max_total = min(max_total, 0.20)
+            print(f"⚠️ 单周回撤{-week_pnl/10000:.0f}万，仓位降至20%")
+    except Exception:
+        pass
+
+    # ── 盈利保护：月盈利≥10%仓位降至50%，≥20%仓位降至30%──
+    try:
+        month_start = datetime.now().replace(day=1).strftime("%Y%m%d")
+        month_pnl = sum(float(d.get("pnl_amt", 0)) for d in get_daily_pnl(month_start))
+        month_pct = month_pnl / CAPITAL * 100
+        if month_pct >= 20:
+            max_total = min(max_total, 0.30)
+            print(f"⚠️ 当月盈利{month_pct:.0f}%，仓位降至30%，强制提盈")
+        elif month_pct >= 10:
+            max_total = min(max_total, 0.50)
+            print(f"⚠️ 当月盈利{month_pct:.0f}%，仓位降至50%")
+    except Exception:
+        pass
+
+    # ── 10. 依次买入（单日最多3只）──
+    MAX_POSITIONS_PER_DAY = 3
     buys = []
     used_pct = sum(float(p.get("capital_pct", 0)) for p in existing)
 
     for c in candidates:
         if c["tier"] == "C" or c["position_pct"] == 0:
             continue
+        if len(buys) >= MAX_POSITIONS_PER_DAY:
+            break
         if used_pct >= max_total:
             break
 
@@ -271,8 +325,14 @@ def auto_buy(date_str):
         lb = c["lb"]
         chg = c["chg"]
 
-        # 仓位：龙头(3板+)≤30%，非龙头≤15%
-        stock_cap = 0.30 if lb >= 3 else 0.15
+        # 仓位固定：S/3板+=30%，A/2板=20%，B/1板=15%
+        tier = c["tier"]
+        if lb >= 3 or tier == "S":
+            stock_cap = 0.30
+        elif lb == 2 or tier == "A":
+            stock_cap = 0.20
+        else:
+            stock_cap = 0.15
         tier_pos = c["position_pct"]
         raw_pct = min(tier_pos, stock_cap)
         remaining_pct = max_total - used_pct
@@ -293,8 +353,16 @@ def auto_buy(date_str):
 
         # ── 滑点模拟：买入价+0.5% ──
         slip_price = round(buy_price * 1.005, 2)
+        # 动态目标价：3板+×1.12, 2板×1.09, 1板×1.07
+        if lb >= 3:
+            target = round(slip_price * 1.12, 2)
+        elif lb == 2:
+            target = round(slip_price * 1.09, 2)
+        else:
+            target = round(slip_price * 1.07, 2)
         stop_loss = calc_stop_loss(slip_price)
-        target = calc_target(slip_price)
+        # 保本止损：浮盈≥5%上移止损至买入价，≥10%上移至×1.05
+        stop_loss = calc_stop_loss(slip_price)  # 基础止损
 
         # 买入方式
         if chg <= 3:

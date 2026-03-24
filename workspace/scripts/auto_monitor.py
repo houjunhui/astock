@@ -99,13 +99,21 @@ def check_position(pos):
 
     pnl_pct = (cur - buy_price) / buy_price * 100 if buy_price > 0 else 0
 
+    # ── 0. 保本止损（浮盈≥5%上移止损至买入价，≥10%上移至×1.05）──
+    effective_stop = stop_loss
+    if buy_price > 0:
+        if pnl_pct >= 10:
+            effective_stop = round(buy_price * 1.05, 2)
+        elif pnl_pct >= 5:
+            effective_stop = buy_price  # 保本
+
     # ── 1. 止损（-4%必走）──
-    if stop_loss > 0 and low is not None and low <= stop_loss:
+    if effective_stop > 0 and low is not None and low <= effective_stop:
         # 滑点模拟：平仓价×0.995
         close = round(stop_loss * 0.995, 2)
         return {
             "action": "stop_loss",
-            "reason": f"触及止损({low}<={stop_loss})",
+            "reason": f"触及止损({low}<={effective_stop})【保本{',锁定5%' if pnl_pct>=10 else ''}】",
             "close_price": close,
         }
 
