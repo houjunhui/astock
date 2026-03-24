@@ -88,3 +88,49 @@ if __name__ == "__main__":
     print(format_cost_breakdown(10.0, 10.7, 10000))
     print()
     print(calc_pnl(10.0, 10.7, 10000))
+
+
+# ── 流动性约束 ─────────────────────────────────────────────────
+MIN_AVG_VOLUME = 50_000_000   # 日均成交额下限5000万
+MARKET_IMPACT_FACTOR = 0.0002  # 每1万元买入，额外0.02%冲击成本
+
+
+def estimate_market_impact(position_amount):
+    """
+    估算冲击成本
+    position_amount: 买入金额（元）
+    返回: 额外滑点（%）
+    """
+    # 简化为：每500万仓位增加0.1%冲击成本
+    return (position_amount / 5_000_000) * 0.001
+
+
+def check_liquidity(position_amount, avg_daily_volume):
+    """
+    检查流动性是否足够
+    position_amount: 计划买入金额
+    avg_daily_volume: 日均成交额
+    返回: (pass: bool, reason: str)
+    """
+    if avg_daily_volume < MIN_AVG_VOLUME:
+        return False, f"日均成交{avg_daily_volume/1e8:.1f}亿<5亿，流动性不足"
+    # 仓位不超过日均成交的10%
+    if position_amount > avg_daily_volume * 0.10:
+        return False, f"仓位{position_amount/1e8:.1f}亿>日均{avg_daily_volume/1e8:.1f}亿的10%"
+    return True, ""
+
+
+def can_liquidate(position_amount, avg_daily_volume, limit_down=False):
+    """
+    检查是否能顺利平仓
+    position_amount: 计划卖出金额
+    avg_daily_volume: 日均成交额
+    limit_down: 是否跌停
+    返回: (pass: bool, reason: str)
+    """
+    if limit_down:
+        return False, "跌停无法卖出"
+    # 卖出金额不超过日均的5%
+    if position_amount > avg_daily_volume * 0.05:
+        return False, f"卖出金额超过日均5%流动性限制"
+    return True, ""

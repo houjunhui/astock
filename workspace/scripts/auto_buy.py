@@ -191,9 +191,11 @@ def auto_buy(date_str):
 
     # ── 0. 情绪温度计 + 加载参数 ──
     params = get_params()
+    # 09:26竞价决策：用昨日收盘数据，不可用当日盘中数据（滞后）
     if NEW_MODULES_OK:
         try:
-            emotion_total, phase, emotion_scores, _ = calc_emotion_score(today)
+            # 竞价用昨日情绪数据，隔夜仓监控用当日实时数据
+            emotion_total, phase, emotion_scores, _ = calc_emotion_score(yday_str)
             temp = emotion_total
         except Exception:
             phase, temp = get_market_phase(today)
@@ -226,10 +228,25 @@ def auto_buy(date_str):
     except Exception:
         pass
 
-    # ── 1. 获取昨日ladder（重试3次）──
-    ladder_y = retry_api(lambda: get_ladder(yday_str))
+    # ── 1. 获取昨日ladder（重试3次 + 数据质量校验）──
+    ladder_y = None
+    for attempt in range(3):
+        try:
+            ladder_y = get_ladder(yday_str)
+            # 数据质量校验
+            if ladder_y and ladder_y.get("boards"):
+                stock_count = sum(len(b.get("stocks", [])) for b in ladder_y["boards"])
+                if stock_count < 5:
+                    print(f"⚠️ 数据异常: 涨停池仅{stock_count}只，重试{attempt+1}/3")
+                    ladder_y = None
+                    continue
+                break
+        except Exception as e:
+            print(f"⚠️ API异常: {e}，重试{attempt+1}/3")
+            ladder_y = None
     if not ladder_y or not ladder_y.get("boards"):
-        return [], "主升", 50, today_str(date_str)
+        print("⚠️ 昨日ladder数据获取失败，停止开仓")
+        return [], phase, temp, today_str(date_str)
 
     y_stocks = {}
     for b in ladder_y.get("boards", []):
@@ -245,8 +262,22 @@ def auto_buy(date_str):
                 "limit_up_suc_rate": s.get("limit_up_suc_rate"),
             }
 
-    # ── 2. 获取竞价数据（重试3次）──
-    ads = retry_api(lambda: get_auction_for_codes(list(y_stocks.keys()), delay=0))
+    # ── 2. 获取竞价数据（重试3次 + 数据质量校验）──
+    ads = {}
+    for attempt in range(3):
+        try:
+            ads = get_auction_for_codes(list(y_stocks.keys()), delay=0)
+            if not ads or len(ads) < 3:
+                print(f"⚠️ 竞价数据不足({len(ads) if ads else 0}只)，重试{attempt+1}/3")
+                ads = {}
+                continue
+            break
+        except Exception as e:
+            print(f"⚠️ 竞价API异常: {e}，重试{attempt+1}/3")
+            ads = {}
+    if not ads or len(ads) < 3:
+        print("⚠️ 竞价数据获取失败，停止开仓")
+        return [], phase, temp, today_str(date_str)
 
     # ── 3. 仓位上限（已有）──
     existing = load_portfolio()
