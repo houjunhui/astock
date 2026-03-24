@@ -290,9 +290,13 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
     else:
         details["D5_封板率"] = "susp"
 
-    # ── S级严格条件：4板+，竞价0-3%，封板率≥85%，RSI<70，换手≥2%，量比≥5 ──
+    # ---- 综合评级（提前计算，用于后续判断）----
+    warn_count = sum(1 for v in details.values() if v == "warn")
+    susp_count = sum(1 for v in details.values() if v == "susp")
+
+    # ── S级严格条件：3板+，竞价0-3%，封板率≥85%，换手≥2%，量比≥5，warn=0，susp≤1 ──
     is_strict_s = (
-        lb >= 4
+        lb >= 3
         and auction_chng is not None
         and 0 <= auction_chng <= 3
         and limit_up_suc_rate is not None
@@ -302,24 +306,22 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
         and turnover >= 2.0
         and vr is not None
         and vr >= 5.0
+        and warn_count == 0
+        and susp_count <= 1
     )
-
-    # ---- 综合评级 ----
-    warn_count = sum(1 for v in details.values() if v == "warn")
-    susp_count = sum(1 for v in details.values() if v == "susp")
 
     if veto_reasons or warn_count >= 2:
         tier = "C"
         position = 0  # 放弃
+    elif is_strict_s:
+        tier = "S"
+        position = 1.00  # 严格S级
     elif warn_count == 1 or susp_count >= 2:
         tier = "B"
         position = 0.30  # 轻仓
     elif susp_count == 1:
         tier = "A"
         position = 0.50
-    elif is_strict_s and susp_count == 0 and warn_count == 0:
-        tier = "S"
-        position = 1.00  # 严格S级
     else:
         tier = "B"
         position = 0.30

@@ -12,6 +12,7 @@ import signal
 from datetime import datetime, date, timedelta
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from astock.strategy_params import get_params
 from astock.quicktiny import get_ladder, get_auction_for_codes, get_market_overview_fixed, get_minute
 from astock.position import (
     init_files, add_position, load_portfolio,
@@ -178,7 +179,8 @@ def auto_buy(date_str):
     today = date_str.replace("-", "")
     yday_str = prev_trading_day(today)
 
-    # ── 0. 亏损/盈利保护（尽早检查，尽早退出）──
+    # ── 0. 加载参数（统一从参数管理系统读取）──
+    params = get_params()
     phase, temp = get_market_phase(today)
     max_total = PHASE_POSITIONS.get(phase, 0.70)
     from astock.position.query import statistics
@@ -332,7 +334,7 @@ def auto_buy(date_str):
         elif lb == 2 or tier == "A":
             stock_cap = 0.20
         else:
-            stock_cap = 0.15
+            stock_cap = params.get('position_B', 0.15)
         tier_pos = c["position_pct"]
         raw_pct = min(tier_pos, stock_cap)
         remaining_pct = max_total - used_pct
@@ -355,11 +357,11 @@ def auto_buy(date_str):
         slip_price = round(buy_price * 1.005, 2)
         # 动态目标价：3板+×1.12, 2板×1.09, 1板×1.07
         if lb >= 3:
-            target = round(slip_price * 1.12, 2)
+            target = round(slip_price * params.get('target_3board_plus', 1.12), 2)
         elif lb == 2:
-            target = round(slip_price * 1.09, 2)
+            target = round(slip_price * params.get('target_2board', 1.09), 2)
         else:
-            target = round(slip_price * 1.07, 2)
+            target = round(slip_price * params.get('target_1board', 1.07), 2)
         stop_loss = calc_stop_loss(slip_price)
         # 保本止损：浮盈≥5%上移止损至买入价，≥10%上移至×1.05
         stop_loss = calc_stop_loss(slip_price)  # 基础止损

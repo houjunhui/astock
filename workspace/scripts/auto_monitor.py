@@ -19,6 +19,7 @@ from astock.position import (
     get_current_price, get_intraday_low, get_intraday_high,
     add_position, get_minute
 )
+from astock.strategy_params import get_params
 
 # ── 超时保护 ────────────────────────────────────────────────────────
 import signal
@@ -80,6 +81,7 @@ def check_position(pos):
     检查单只持仓，返回动作（按优先级，只返回最高优先级一条）
     返回: {action, reason, close_price}
     """
+    params = get_params()
     code = pos["code"]
     name = pos["name"]
     buy_price = float(pos["buy_price"])
@@ -109,8 +111,8 @@ def check_position(pos):
 
     # ── 1. 止损（-4%必走）──
     if effective_stop > 0 and low is not None and low <= effective_stop:
-        # 滑点模拟：平仓价×0.995
-        close = round(stop_loss * 0.995, 2)
+        # 实际用low触及价含滑点平仓
+        close = round(low * 0.995, 2)
         return {
             "action": "stop_loss",
             "reason": f"触及止损({low}<={effective_stop})【保本{',锁定5%' if pnl_pct>=10 else ''}】",
@@ -122,7 +124,7 @@ def check_position(pos):
         limit_price = calc_broken_price(code, buy_price, notes)
         if limit_price and limit_price > 0:
             broken_pct = (limit_price - cur) / limit_price * 100 if limit_price > 0 else 0
-            threshold = 6.0 if level >= 3 else 4.0  # 龙头6%，非龙头4%
+            threshold = params.get('broken_limit_dragon', 0.06) * 100 if level >= 3 else params.get('broken_limit_normal', 0.04) * 100  # 龙头6%，非龙头4%
             if broken_pct >= threshold:
                 close = round(cur * 0.995, 2)  # 滑点
                 return {
@@ -144,7 +146,7 @@ def check_position(pos):
     if peak is not None and peak > 0 and peak > buy_price:
         drawdown = (peak - cur) / peak * 100
         profit = (peak - buy_price) / buy_price * 100
-        if drawdown >= 40 and profit >= 6:
+        if drawdown >= params.get('trailing_profit_pct', 0.40) * 100 and profit >= params.get('trailing_profit_min', 6):
             close = round(cur * 0.995, 2)
             return {
                 "action": "trailing_profit",
@@ -153,7 +155,7 @@ def check_position(pos):
             }
 
     # ── 5. 浮亏处理（仅未触发以上条件时执行）──
-    if pnl_pct <= -5:
+    if pnl_pct <= -params.get('close_threshold', 0.05) * 100:
         close = round(cur * 0.995, 2)
         return {
             "action": "full_close",
@@ -161,7 +163,7 @@ def check_position(pos):
             "close_price": close,
             "reduce_qty": qty,
         }
-    elif pnl_pct <= -2:
+    elif pnl_pct <= -params.get('reduce_threshold', 0.02) * 100:
         # 降仓50%
         half_qty = qty // 2
         if half_qty >= 100:

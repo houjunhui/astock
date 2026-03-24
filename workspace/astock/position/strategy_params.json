@@ -1,5 +1,5 @@
 {
-  "current_version": "v2",
+  "current_version": "v1",
   "versions": {
     "v1": {
       "created": "20260324",
@@ -37,7 +37,7 @@
         "profit_protect_20": 0.3
       },
       "stats": {},
-      "rollback_count": 1
+      "rollback_count": 2
     },
     "v2": {
       "created": "20260324",
@@ -77,7 +77,7 @@
       "stats": {
         "win_rate": 60
       },
-      "rollback_count": 2
+      "rollback_count": 3
     },
     "v3": {
       "created": "20260324",
@@ -131,6 +131,12 @@
       "date": "20260324",
       "from": "v3",
       "to": "v2",
+      "reason": "连续3天收益为负"
+    },
+    {
+      "date": "20260324",
+      "from": "v2",
+      "to": "v1",
       "reason": "连续3天收益为负"
     }
   ]
