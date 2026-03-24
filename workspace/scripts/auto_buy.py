@@ -381,8 +381,6 @@ def auto_buy(date_str):
         else:
             target = round(slip_price * params.get('target_1board', 1.07), 2)
         stop_loss = calc_stop_loss(slip_price, param=params.get('stop_loss_default'))
-        # 保本止损：浮盈≥5%上移止损至买入价，≥10%上移至×1.05
-        stop_loss = calc_stop_loss(slip_price, param=params.get('stop_loss_default'))  # 基础止损
 
         # 买入方式
         if chg <= 3:
@@ -392,7 +390,16 @@ def auto_buy(date_str):
         else:
             method = f"等回调{chg*0.75:.0f}%"
 
+        # ── 流动性约束：一字板/无量高开 → 无法真实成交 ──
+        limit_type = c.get("limit_up_type", "")
+        open_num = c.get("open_num")
+        if limit_type == "一字板":
+            continue  # 一字板无法排队买入
+        if open_num is not None and open_num < 5000:
+            continue  # 竞价挂单不足5000手（约50万），视为无量
+
         # 幂等：同一股票当日仅买一次
+        max_days = 2 if lb >= 3 else 1  # 龙3板+持2夜，普通持1夜
         ok, is_new = add_position(
             code=code, name=name,
             buy_price=slip_price, qty=lot_size * 100,
@@ -400,7 +407,7 @@ def auto_buy(date_str):
             stop_loss=stop_loss, target_price=target,
             buy_method=method,
             notes=f"自动买入 | {phase} | 竞价+{chg:.2f}%",
-            level=lb
+            level=lb, max_days=max_days
         )
 
         if not ok:

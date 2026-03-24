@@ -185,9 +185,25 @@ def check_position(pos):
 
 
 def monitor():
-    """监控所有持仓，返回操作记录"""
+    """监控所有持仓，返回操作记录（含T+1+超期+自动重试）"""
     init_files()
-    positions = load_portfolio()
+    # 自动重试加载持仓
+    positions = None
+    for _ in range(3):
+        try:
+            positions = load_portfolio()
+            break
+        except Exception:
+            continue
+    if positions is None:
+        return [], [], ["⚠️ 持仓加载失败"]
+
+    closed = []
+    reduced = []
+    alerts = []
+
+    # ── T+1 规则：今日新仓不允许在盘中平仓 ──
+    today = date.today().strftime("%Y%m%d")
 
     closed = []
     reduced = []
@@ -201,6 +217,33 @@ def monitor():
         if buy_date and buy_date == today:
             # 今日新开仓，T+1限制，不得触发平仓
             continue
+
+        # ── 持仓超期检查：超过max_days必须强制平仓 ──
+        max_days = int(pos.get("max_days", 1))
+        buy_dt = None
+        try:
+            buy_dt = datetime.strptime(buy_date, "%Y%m%d")
+        except Exception:
+            pass
+        if buy_dt:
+            days_held = (datetime.now() - buy_dt).days
+            if days_held >= max_days:
+                # 超期强制平仓
+                cur = with_timeout(5, None)(get_current_price)(pos["code"])
+                close_price = round(cur * (1 - 0.0005), 2) if cur else float(pos["buy_price"])
+                reason = f"持仓超期({days_held}天≥{max_days}天最大期限)"
+                close_position(pos["code"], close_price, reason)
+                closed.append({
+                    "action": "force_close",
+                    "reason": reason,
+                    "close_price": close_price,
+                    "code": pos["code"], "name": pos["name"],
+                    "buy_price": float(pos["buy_price"]), "close_price": close_price,
+                    "qty": int(pos["qty"]),
+                    "pnl_pct": (close_price - float(pos["buy_price"])) / float(pos["buy_price"]) * 100 if float(pos["buy_price"]) else 0
+                })
+                alerts.append(f"🚨 {pos['name']}({pos['code']}) 持仓{days_held}天超期，强制平仓")
+                continue
 
         result = check_position(pos)
         if result is None:

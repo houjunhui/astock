@@ -52,6 +52,7 @@ def init_db():
                 status TEXT NOT NULL,
                 level INTEGER DEFAULT 0,
                 notes TEXT DEFAULT '',
+                max_days INTEGER DEFAULT 1,
                 created_at TEXT DEFAULT (datetime('now', 'localtime')),
                 UNIQUE(code, buy_date)
             )
@@ -77,7 +78,7 @@ def init_db():
         conn.execute("CREATE INDEX IF NOT EXISTS idx_pnl_date ON daily_pnl(date)")
 
 def add_position(code, name, buy_price, qty, capital_pct, stop_loss, target_price,
-                buy_method="", notes="", level=None):
+                buy_method="", notes="", level=None, max_days=1):
     """
     新增持仓（去重幂等）
     返回: (success, is_new)
@@ -90,12 +91,12 @@ def add_position(code, name, buy_price, qty, capital_pct, stop_loss, target_pric
             conn.execute("""
                 INSERT INTO positions
                 (date, code, name, buy_date, buy_price, qty, capital_pct, stop_loss,
-                 target_price, buy_method, current_price, pnl_pct, pnl_amt, status, level, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 target_price, buy_method, current_price, pnl_pct, pnl_amt, status, level, notes, max_days)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 today, code, name, today, buy_price, qty, capital_pct, stop_loss,
                 target_price, buy_method, buy_price, 0.0, 0.0, '持仓',
-                level or 0, notes
+                level or 0, notes, max_days
             ))
             return True, True
     except sqlite3.IntegrityError:
@@ -256,8 +257,8 @@ def migrate_csv_to_sqlite(csv_path):
                     conn.execute("""
                         INSERT OR IGNORE INTO positions
                         (date, code, name, buy_date, buy_price, qty, capital_pct, stop_loss,
-                         target_price, buy_method, current_price, pnl_pct, pnl_amt, status, level, notes)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                         target_price, buy_method, current_price, pnl_pct, pnl_amt, status, level, notes, max_days)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         row.get("date",""), row.get("code",""), row.get("name",""),
                         row.get("buy_date",""), float(row.get("buy_price",0) or 0),
@@ -266,7 +267,8 @@ def migrate_csv_to_sqlite(csv_path):
                         row.get("buy_method",""), float(row.get("current_price",0) or 0),
                         float(row.get("pnl_pct",0) or 0), float(row.get("pnl_amt",0) or 0),
                         row.get("status","持仓"), int(row.get("level",0) or 0),
-                        row.get("notes","")
+                        row.get("notes",""),
+                        int(row.get("max_days", 1) or 1)
                     ))
                 except Exception:
                     pass
