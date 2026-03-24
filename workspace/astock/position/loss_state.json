@@ -1,1 +1,1 @@
-{"consecutive_losses": 0, "total_losses": 5, "last_loss_date": "20260325", "stopped_reason": "连亏5笔，策略全面失效", "recovery_mode": false}
+{"consecutive_losses": 3, "total_losses": 3, "last_loss_date": "20260323", "stopped_reason": "连亏3笔+疑似策略失效", "recovery_mode": true}

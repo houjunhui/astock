@@ -20,6 +20,16 @@ from astock.position import (
 )
 from astock.auction import auction_tier
 
+# 新增: 情绪温度计 + 凯利仓位 + 连板梯队 + 熔断检查
+try:
+    from astock.pools.emotion_thermometer import calc_emotion_score
+    from astock.pools.kelly_position import allocate_positions, PHASE_CAP as KELLY_PHASE_CAP
+    from astock.pools.board_tier import can_open_position as board_tier_check, get_board_tier
+    from astock.risk_control import check_circuit_breaker
+    NEW_MODULES_OK = True
+except Exception as e:
+    NEW_MODULES_OK = False
+
 CAPITAL = 1_000_000  # 100万
 
 # ── 情绪周期仓位上限 ───────────────────────────────────────────────
@@ -179,18 +189,33 @@ def auto_buy(date_str):
     today = date_str.replace("-", "")
     yday_str = prev_trading_day(today)
 
-    # ── 0. 加载参数（统一从参数管理系统读取）──
+    # ── 0. 情绪温度计 + 加载参数 ──
     params = get_params()
-    phase, temp = get_market_phase(today)
-    # 阶段仓位上限（params优先，PHASE_POSITIONS作兜底）
-    phase_map = {
-        "主升": params.get("max_total_main_sheng", 0.70),
-        "发酵": params.get("max_total_fajiao", 0.60),
-        "分歧": params.get("max_total_fenqi", 0.40),
-        "退潮": params.get("max_total_recession", 0.20),
-        "冰点": 0.00,
-    }
-    max_total = phase_map.get(phase, PHASE_POSITIONS.get(phase, 0.70))
+    if NEW_MODULES_OK:
+        try:
+            emotion_total, phase, emotion_scores, _ = calc_emotion_score(today)
+            temp = emotion_total
+        except Exception:
+            phase, temp = get_market_phase(today)
+    else:
+        phase, temp = get_market_phase(today)
+    
+    # 阶段仓位上限（kelly_position的PHASE_CAP）
+    phase_cap = KELLY_PHASE_CAP.get(phase, 0.70)
+    max_total = phase_cap
+    
+    # ── 0.5 熔断检查：触发则全日停止开仓 ──
+    if NEW_MODULES_OK:
+        try:
+            circuit_triggered, circuit_reasons = check_circuit_breaker(today)
+            if circuit_triggered:
+                print(f"【🛡️ 熔断触发，停止开仓】")
+                for r in circuit_reasons:
+                    print(f"  ❌ {r}")
+                return [], phase, temp, today_str(date_str)
+        except Exception:
+            pass
+    
     from astock.position.query import statistics
     from astock.position import get_daily_pnl
     try:
@@ -283,6 +308,19 @@ def auto_buy(date_str):
     # ── 5. 主板/ST/退市过滤 ──
     candidates, skip_reasons = filter_candidates(candidates, phase)
 
+    # ── 5b. 连板梯队过滤（board_tier模块）──
+    if NEW_MODULES_OK:
+        tier_board_filtered = []
+        for c in candidates:
+            lb = c.get("lb", 1)
+            chg = c.get("chg", 0)
+            can_open, tier_name, reason = board_tier_check(lb, chg, phase)
+            if not can_open:
+                skip_reasons.setdefault(c["code"], []).append(f"梯队{tier_name}:{reason}")
+            else:
+                tier_board_filtered.append(c)
+        candidates = tier_board_filtered
+
     # ── 6. 竞价过滤器 ──
     passed = []
     for c in candidates:
@@ -297,6 +335,36 @@ def auto_buy(date_str):
     # ── 7. 排序：S>A>B>C ──
     tier_order = {"S": 0, "A": 1, "B": 2}
     candidates.sort(key=lambda x: tier_order.get(x["tier"], 3))
+
+    # ── 7b. 凯利仓位分配（kelly_position模块）──
+    if NEW_MODULES_OK and candidates:
+        try:
+            kelly_candidates = []
+            for c in candidates:
+                if c["tier"] in ("S", "A", "B"):
+                    kelly_candidates.append({
+                        "code": c["code"],
+                        "name": c.get("name", c["code"]),
+                        "tier": c["tier"],
+                        "win_rate": params.get(f"kelly_win_rate_{c['tier']}", 0.3),
+                        "avg_win_pct": params.get("kelly_avg_win_pct", 9.0),
+                        "avg_loss_pct": params.get("kelly_avg_loss_pct", 4.0),
+                        "stop_loss_pct": 4.0,
+                        "sector": c.get("tier_info", {}).get("industry", "default"),
+                    })
+            if kelly_candidates:
+                sector_map = {}
+                allocated = allocate_positions(kelly_candidates, phase, sector_map)
+                alloc_map = {a["code"]: a["position_pct"] for a in allocated}
+                for c in candidates:
+                    if c["code"] in alloc_map and alloc_map[c["code"]] > 0:
+                        c["position_pct"] = alloc_map[c["code"]]
+                        c["position_source"] = "kelly"
+                    elif c["code"] in alloc_map:
+                        c["position_pct"] = 0
+                        c["position_source"] = "kelly_zero"
+        except Exception as e:
+            pass  # Kelly失败时用原始仓位
 
     # ── 8. 亏损保护（单周回撤≥5万降仓）──
     try:
