@@ -6,9 +6,9 @@
       "agentId": "main",
       "sessionKey": "agent:main:feishu:direct:ou_12d595ebce7c7b73e926034c562b59d0",
       "name": "A股每日竞价复盘",
-      "enabled": true,
+      "enabled": false,
       "createdAtMs": 1774178531556,
-      "updatedAtMs": 1774274473718,
+      "updatedAtMs": 1774342014666,
       "schedule": {
         "kind": "cron",
         "expr": "0 22 * * 1-5",
@@ -26,7 +26,6 @@
         "channel": "feishu"
       },
       "state": {
-        "nextRunAtMs": 1774360800000,
         "lastRunAtMs": 1774274400006,
         "lastRunStatus": "ok",
         "lastStatus": "ok",

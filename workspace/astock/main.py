@@ -9,17 +9,18 @@ from datetime import datetime
 # 加载 .env 环境变量（兼容 bash export 格式）
 _env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
 if os.path.exists(_env_path):
-    for line in open(_env_path):
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "=" in line:
-            k, v = line.split("=", 1)
-            k = k.strip()
-            if k.startswith("export "):
-                k = k[7:].strip()
-            if k:
-                os.environ.setdefault(k, v.strip().strip('"').strip("'"))
+    with open(_env_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" in line:
+                k, v = line.split("=", 1)
+                k = k.strip()
+                if k.startswith("export "):
+                    k = k[7:].strip()
+                if k:
+                    os.environ.setdefault(k, v.strip().strip('"').strip("'"))
 
 # 导入各模块
 from config import DB_PATH, EXIT_RULES

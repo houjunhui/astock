@@ -14,7 +14,11 @@ from config import BASE_PROBS, PHASE_BASE_DISCOUNT
 # 加载校准表
 _CAL_PATH = os.path.join(os.path.dirname(__file__), "calibration_table.json")
 try:
-    _CAL = json.load(open(_CAL_PATH)) if os.path.exists(_CAL_PATH) else {}
+    if os.path.exists(_CAL_PATH):
+        with open(_CAL_PATH) as f:
+            _CAL = json.load(f)
+    else:
+        _CAL = {}
 except Exception:
     _CAL = {}
 

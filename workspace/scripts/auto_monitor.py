@@ -244,7 +244,9 @@ def format_report(closed, reduced, added, alerts, date_str=None):
 
     if reduced:
         for r in reduced:
-            lines.append(f"\n⚠️ {r['name']}({r['code']}) 降仓")
+            is_full = r['reduce_qty'] >= r['qty']
+            label = "清仓" if is_full else "降仓"
+            lines.append(f"\n⚠️ {r['name']}({r['code']}) {label}")
             lines.append(f"   卖出{r['reduce_qty']}股@{r['close_price']}，剩余{r['remaining_qty']}股")
 
     if added:
