@@ -93,17 +93,22 @@ def statistics(start_date=None, end_date=None):
         pnl_val = float(t.get("pnl_amt", 0)) if t.get("pnl_amt", "").replace(".", "").replace("-", "").isdigit() else 0
         by_tier[tier_key]["pnl"] += pnl_val
 
-    # 按板位统计（从level字段或notes推断）
+    # 按板位统计（使用CSV的level字段）
     by_level = defaultdict(lambda: {"total": 0, "win": 0, "pnl": 0})
     for t in closed:
-        notes = t.get("notes", "")
-        level = "1板"
-        if "6板" in notes or "6板" in str(t.get("target_price", "")):
+        lv_str = t.get("level", "")
+        if lv_str in ("6", "7", "8", "9"):
             level = "6板+"
-        elif "3板" in notes:
-            level = "3板+"
-        elif "2板" in notes:
+        elif lv_str == "5":
+            level = "5板"
+        elif lv_str == "4":
+            level = "4板"
+        elif lv_str == "3":
+            level = "3板"
+        elif lv_str == "2":
             level = "2板"
+        else:
+            level = "1板"
         by_level[level]["total"] += 1
         if float(t.get("pnl_pct", 0)) > 0:
             by_level[level]["win"] += 1

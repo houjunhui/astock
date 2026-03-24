@@ -18,7 +18,8 @@ DAILY_PNL_FILE = TRACKER_DIR / "daily_pnl.csv"
 CAPITAL_FILE = TRACKER_DIR / "capital.csv"
 
 FIELDS = ["date", "code", "name", "buy_date", "buy_price", "qty", "capital_pct",
-          "stop_loss", "target_price", "buy_method", "current_price", "pnl_pct", "pnl_amt", "status", "notes"]
+          "stop_loss", "target_price", "buy_method", "current_price", "pnl_pct", "pnl_amt",
+          "status", "level", "notes"]
 
 
 def init_files():
@@ -114,7 +115,7 @@ def update_positions():
     return results
 
 
-def add_position(code, name, buy_price, qty, capital_pct, stop_loss, target_price, buy_method="", notes=""):
+def add_position(code, name, buy_price, qty, capital_pct, stop_loss, target_price, buy_method="", notes="", level=None):
     """记录新开仓"""
     init_files()
     today = date.today().strftime("%Y-%m-%d")
@@ -131,7 +132,9 @@ def add_position(code, name, buy_price, qty, capital_pct, stop_loss, target_pric
         "buy_method": buy_method,
         "current_price": buy_price,
         "pnl_pct": 0.0,
+        "pnl_amt": "0.0",
         "status": "持仓",
+        "level": str(level) if level else "",
         "notes": notes,
     }
     with open(PORTFOLIO_FILE, "a", newline="", encoding="utf-8") as f:

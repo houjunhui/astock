@@ -201,7 +201,8 @@ def monitor():
                 stop_loss=float(pos["stop_loss"]),
                 target_price=float(pos["target_price"]),
                 buy_method=pos.get("buy_method", "") + "→加仓",
-                notes=new_notes
+                notes=new_notes,
+                level=pos.get("level") or None
             )
             added.append({**result, "code": code, "name": name,
                             "add_price": add_price, "add_qty": add_qty,

@@ -183,7 +183,8 @@ def auto_buy(date_str):
             capital_pct=suggest_pct,
             stop_loss=stop_loss, target_price=target,
             buy_method=method,
-            notes=f"自动买入 | {phase} | 竞价+{chg:.2f}%"
+            notes=f"自动买入 | {phase} | 竞价+{chg:.2f}%",
+            level=lb
         )
 
         buys.append({
