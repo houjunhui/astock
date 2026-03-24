@@ -164,7 +164,7 @@ def apply_auction_filters(c, phase):
         return True, f"量比{vr:.1f}<3"
 
     # 4. 竞价换手 < 1%
-    if turnover and turnover < 1.0:
+    if turnover and turnover < params.get('turnover_min', 1.0):
         return True, f"换手{turnover:.2f}<1%"
 
     return False, ""
@@ -182,13 +182,21 @@ def auto_buy(date_str):
     # ── 0. 加载参数（统一从参数管理系统读取）──
     params = get_params()
     phase, temp = get_market_phase(today)
-    max_total = PHASE_POSITIONS.get(phase, 0.70)
+    # 阶段仓位上限（params优先，PHASE_POSITIONS作兜底）
+    phase_map = {
+        "主升": params.get("max_total_main_sheng", 0.70),
+        "发酵": params.get("max_total_fajiao", 0.60),
+        "分歧": params.get("max_total_fenqi", 0.40),
+        "退潮": params.get("max_total_recession", 0.20),
+        "冰点": 0.00,
+    }
+    max_total = phase_map.get(phase, PHASE_POSITIONS.get(phase, 0.70))
     from astock.position.query import statistics
     from astock.position import get_daily_pnl
     try:
         stats = statistics()
         streak = stats.get("max_consecutive_loss", 0)
-        if streak >= 2:
+        if streak >= params.get('consecutive_loss_stop', 2):
             return [], phase, temp, today_str(date_str)
     except Exception:
         pass
@@ -246,8 +254,18 @@ def auto_buy(date_str):
             vr=vr, auction_chng=chg, phase=phase,
             zt_yesterday=zt, dz_risks=None,
             limit_up_suc_rate=yd.get("limit_up_suc_rate"),
-            turnover=turnover, params=params
+            turnover=turnover, params=params,
+            auction_amount=yd.get("auction_amount")
         )
+        # 用params的position_S/A/B覆盖auction_tier的仓位建议
+        tier = tier_info["tier"]
+        tier_position_override = {
+            "S": params.get("position_S"),
+            "A": params.get("position_A"),
+            "B": params.get("position_B"),
+        }
+        if tier in tier_position_override and tier_position_override[tier] is not None:
+            tier_info["position"] = tier_position_override[tier]
 
         candidates.append({
             "code": code, "name": name, "lb": lb,
@@ -284,7 +302,7 @@ def auto_buy(date_str):
     try:
         week_start = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime("%Y%m%d")
         week_pnl = sum(float(d.get("pnl_amt", 0)) for d in get_daily_pnl(week_start))
-        if week_pnl <= -50_000:
+        if week_pnl <= -params.get('week_drawdown_stop', 50000):
             max_total = min(max_total, 0.20)
             print(f"⚠️ 单周回撤{-week_pnl/10000:.0f}万，仓位降至20%")
     except Exception:
@@ -295,17 +313,17 @@ def auto_buy(date_str):
         month_start = datetime.now().replace(day=1).strftime("%Y%m%d")
         month_pnl = sum(float(d.get("pnl_amt", 0)) for d in get_daily_pnl(month_start))
         month_pct = month_pnl / CAPITAL * 100
-        if month_pct >= 20:
-            max_total = min(max_total, 0.30)
+        if month_pct >= 20:  # 月盈≥20%→仓位≤30%
+            max_total = min(max_total, params.get('profit_protect_20', 0.30))
             print(f"⚠️ 当月盈利{month_pct:.0f}%，仓位降至30%，强制提盈")
-        elif month_pct >= 10:
-            max_total = min(max_total, 0.50)
+        elif month_pct >= 10:  # 月盈≥10%→仓位≤50%
+            max_total = min(max_total, params.get('profit_protect_10', 0.50))
             print(f"⚠️ 当月盈利{month_pct:.0f}%，仓位降至50%")
     except Exception:
         pass
 
-    # ── 10. 依次买入（单日最多3只）──
-    MAX_POSITIONS_PER_DAY = 3
+    # ── 10. 依次买入（单日最多N只）──
+    MAX_POSITIONS_PER_DAY = params.get('max_positions_per_day', 3)
     buys = []
     used_pct = sum(float(p.get("capital_pct", 0)) for p in existing)
 
@@ -362,9 +380,9 @@ def auto_buy(date_str):
             target = round(slip_price * params.get('target_2board', 1.09), 2)
         else:
             target = round(slip_price * params.get('target_1board', 1.07), 2)
-        stop_loss = calc_stop_loss(slip_price)
+        stop_loss = calc_stop_loss(slip_price, param=params.get('stop_loss_default'))
         # 保本止损：浮盈≥5%上移止损至买入价，≥10%上移至×1.05
-        stop_loss = calc_stop_loss(slip_price)  # 基础止损
+        stop_loss = calc_stop_loss(slip_price, param=params.get('stop_loss_default'))  # 基础止损
 
         # 买入方式
         if chg <= 3:

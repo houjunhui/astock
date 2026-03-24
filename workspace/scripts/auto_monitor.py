@@ -104,9 +104,9 @@ def check_position(pos):
     # ── 0. 保本止损（浮盈≥5%上移止损至买入价，≥10%上移至×1.05）──
     effective_stop = stop_loss
     if buy_price > 0:
-        if pnl_pct >= 10:
-            effective_stop = round(buy_price * 1.05, 2)
-        elif pnl_pct >= 5:
+        if pnl_pct >= params.get('lock_profit_threshold', 0.10) * 100:
+            effective_stop = round(buy_price * (1 + params.get('lock_profit_threshold', 0.10)), 2)
+        elif pnl_pct >= params.get('breakeven_threshold', 0.05) * 100:
             effective_stop = buy_price  # 保本
 
     # ── 1. 止损（-4%必走）──

@@ -170,7 +170,7 @@ def auction_ok(code, name, lb, jb_prob, vr=None, sector_hot=False, phase="退潮
 def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
                  zt_yesterday=False, phase="退潮", dz_risks=None,
                  ml_prob=None, limit_up_suc_rate=None, turnover=None,
-                 params=None):
+                 params=None, auction_amount=None):
     """
     竞价标的评级 S/A/B/C，直接绑定仓位。
 
@@ -226,15 +226,16 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
 
     # ---- D2: VR量能（动态阈值按板位+盘口）----
     if vr is not None:
+        _p = params if params else {}
+        vr_base = _p.get('vol_ratio_min', 1.0)
         if lb >= 5:
-            vr_threshold = 0.80
+            vr_threshold = vr_base * 0.8
         elif lb >= 3:
-            vr_threshold = 1.00
+            vr_threshold = vr_base * 1.0
         elif lb >= 1:
-            vr_threshold = 1.20
+            vr_threshold = vr_base * 1.2
         else:
-            vr_threshold = 1.00
-
+            vr_threshold = vr_base
         if vr < vr_threshold:
             details["D2_VR"] = "warn"
             veto_reasons.append(f"VR={vr:.2f}<{vr_threshold}量能不足")
@@ -319,6 +320,12 @@ def auction_tier(code, name, lb, jb_prob, vr=None, auction_chng=None,
         and warn_count == 0
         and susp_count <= 1
     )
+
+    # ── 竞价金额过滤 ──
+    _p = params if params else {}
+    amount_min = _p.get("auction_amount_min", 50_000_000)
+    if auction_amount is not None and auction_amount < amount_min:
+        veto_reasons.append(f"竞价金额{auction_amount/1e6:.0f}万<{amount_min/1e6:.0f}万")
 
     if veto_reasons or warn_count >= 2:
         tier = "C"
