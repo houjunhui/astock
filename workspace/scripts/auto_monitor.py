@@ -10,7 +10,7 @@ auto_monitor.py - 盘中持仓智能监控（增强版）
 滑点模拟：平仓价±0.5%
 """
 import sys, os, time
-from datetime import datetime
+from datetime import datetime, date
 from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -193,7 +193,15 @@ def monitor():
     reduced = []
     alerts = []
 
+    # ── T+1 规则：今日新仓不允许在盘中平仓 ──
+    today = date.today().strftime("%Y%m%d")
+
     for pos in positions:
+        buy_date = pos.get("buy_date", "")
+        if buy_date and buy_date == today:
+            # 今日新开仓，T+1限制，不得触发平仓
+            continue
+
         result = check_position(pos)
         if result is None:
             continue

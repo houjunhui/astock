@@ -25,6 +25,17 @@ def auto_close(date_str):
     closed = []
 
     for pos in positions:
+        # ── T+1 规则：今日新仓不允许在今日平仓 ──
+        buy_date = pos.get("buy_date", "")
+        if buy_date and buy_date == today:
+            # 今日新开仓，不得在今日平仓 → 纳入隔夜仓
+            continue
+        if not buy_date:
+            # 无buy_date字段的旧数据，按旧逻辑处理（有风险）
+            buy_date_display = "未知"
+        else:
+            buy_date_display = buy_date
+
         code = pos["code"]
         name = pos["name"]
         buy_price = float(pos["buy_price"])
