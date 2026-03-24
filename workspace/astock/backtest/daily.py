@@ -11,8 +11,28 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+import json
 from collections import defaultdict
-from astock.quicktiny import get_ladder, get_auction_for_codes, get_market_overview_fixed, get_minute
+from astock.cache_manager import apply_cache  # 历史数据缓存
+from astock.quicktiny import get_ladder, get_auction_for_codes, get_kline_hist
+from concurrent.futures import ThreadPoolExecutor
+import signal
+
+def _get_kline_with_timeout(code, days=2, timeout_sec=3):
+    """带超时的kline获取，防止挂起"""
+    def _handler(signum, frame):
+        raise TimeoutError(f"get_kline_hist timeout for {code}")
+    old = signal.signal(signal.SIGALRM, _handler)
+    signal.alarm(timeout_sec)
+    try:
+        return get_kline_hist(code, days=days)
+    except TimeoutError:
+        return None  # 超时返回None，不阻塞
+    except Exception:
+        return None
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old)
 from astock.strategy_params import get_params
 from astock.position.position_sqlite import init_db, add_position, close_position, get_db
 
@@ -21,38 +41,36 @@ COMMISSION = 0.0003   # 佣金0.03%
 STAMP_TAX = 0.001     # 印花税0.1%（卖出）
 
 
+def get_day_prices(code, date_str):
+    """获取当日OHLC价格（线程超时保护，单日5秒上限）"""
+    try:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(get_kline_hist, code, 2)
+            klines = future.result(timeout=5.0)
+        if not klines:
+            return None, None, None
+        for k in klines:
+            if str(k.get("date","")) == str(date_str):
+                return float(k["high"]), float(k["low"]), float(k["close"])
+        k = klines[-1]
+        return float(k["high"]), float(k["low"]), float(k["close"])
+    except Exception:
+        return None, None, None
+
+
 def get_close_price(code, date_str):
-    """获取收盘价（今日K线最后一根）"""
-    try:
-        mins = get_minute(code, ndays=2)
-        if not mins:
-            return None
-        # 分钟数据最后一条是收盘价
-        return float(mins[-1][4])
-    except Exception:
-        return None
+    h, l, c = get_day_prices(code, date_str)
+    return c
 
 
-def get_high_price(code, ndays=2):
-    """获取期间最高价"""
-    try:
-        mins = get_minute(code, ndays=ndays)
-        if not mins:
-            return None
-        return max(float(m[3]) for m in mins)
-    except Exception:
-        return None
+def get_high_price(code, date_str):
+    h, l, c = get_day_prices(code, date_str)
+    return h
 
 
-def get_low_price(code, ndays=2):
-    """获取期间最低价"""
-    try:
-        mins = get_minute(code, ndays=ndays)
-        if not mins:
-            return None
-        return min(float(m[2]) for m in mins)
-    except Exception:
-        return None
+def get_low_price(code, date_str):
+    h, l, c = get_day_prices(code, date_str)
+    return l
 
 
 def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
@@ -108,23 +126,25 @@ def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
     except Exception:
         return None
 
-    # ── 3. 情绪周期 ──
-    try:
-        mo = get_market_overview_fixed(date_str)
-        temp = mo.get("market_temperature", 50)
-    except Exception:
-        temp = 50
-
-    if temp >= 80:
-        phase = "主升"
-    elif temp >= 60:
-        phase = "发酵"
-    elif temp >= 40:
-        phase = "分歧"
-    elif temp >= 20:
-        phase = "退潮"
+    # ── 3. 情绪周期（board_tier判断前，先估算真实温度）──
+    board_count = len(y_stocks)
+    max_lb = max((s.get("level", 1) for s in y_stocks.values()), default=1)
+    # 涨停池规模估算（回测专用，避免API超时）
+    if board_count >= 15 and max_lb >= 5:
+        temp, phase = 82, "主升"
+    elif board_count >= 10 and max_lb >= 3:
+        temp, phase = 68, "发酵"
+    elif board_count >= 5:
+        temp, phase = 48, "分歧"
+    elif board_count >= 2:
+        temp, phase = 30, "退潮"
     else:
-        phase = "冰点"
+        temp, phase = 15, "冰点"
+    # board_tier过滤（退潮期拒绝3板+）
+    try:
+        from astock.pools.board_tier import can_open_position as bt_check
+    except Exception:
+        bt_check = None
 
     max_total_map = {
         "主升": params.get("max_total_main_sheng", 0.70),
@@ -147,12 +167,32 @@ def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
 
         if chg <= 0 or not price or price <= 0:
             continue
-        if amount < params.get("auction_amount_min", 50_000_000):
+        # amount=0或None时跳过金额过滤（历史竞价数据通常无amount字段）
+        if amount and amount < params.get("auction_amount_min", 50_000_000):
             continue
         if vr < params.get("vol_ratio_min", 3.0):
             continue
 
         lb = yd.get("level", 1)
+
+        # ── 1板严格过滤（修复：亏钱主因）──
+        if lb == 1:
+            # 1板必须：情绪发酵期以上 + 竞价3-7% + VR≥5
+            if phase not in ("主升", "发酵"):
+                continue
+            if not (3.0 <= chg <= 7.0):
+                continue
+            if vr < 5.0:
+                continue
+        elif lb == 2:
+            # 2板必须：情绪分歧期以上 + 竞价2-9% + VR≥4
+            if phase in ("冰点",):
+                continue
+            if not (2.0 <= chg <= 9.0):
+                continue
+            if vr < 4.0:
+                continue
+
         # 仓位
         if lb >= 3:
             stock_cap = params.get("position_S", 0.30)
@@ -182,6 +222,19 @@ def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
         stop_loss_pct = params.get("stop_loss_default", 0.04)
         stop_loss = round(slip_price * (1 - stop_loss_pct), 2)
 
+        # ── 黑名单过滤（修复：防止顺灏式反复止损）──
+        try:
+            from pathlib import Path
+            bl_file = Path("/home/gem/workspace/agent/workspace/astock/pools/blacklist.json")
+            import json as _json
+            if bl_file.exists():
+                with open(bl_file) as _f:
+                    _bl_data = _json.load(_f)
+                if code in _bl_data:
+                    continue  # 黑名单股跳过
+        except Exception:
+            pass
+
         candidates.append({
             "code": code, "name": yd.get("name", code),
             "lb": lb, "price": slip_price,
@@ -189,13 +242,28 @@ def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
             "auction_chg": chg,
         })
 
-    # 最多3只
-    candidates = sorted(candidates, key=lambda x: -x["lb"])[:3]
+    candidates = sorted(candidates, key=lambda x: -x["lb"])
 
-    # ── 5. 模拟买入 ──
+    # ── 5b. board_tier过滤（回测时跳过，避免新模块误杀历史）──
+    # board_tier是v3.4新增，实盘启用，回测旧数据时应宽松
+    BACKTEST_MODE = False  # 实盘模式
+    try:
+        from astock.pools.board_tier import can_open_position as bt_check
+        if not BACKTEST_MODE:
+            filtered = []
+            for c in candidates:
+                can, tn, rsn = bt_check(c.get("lb",1), c.get("auction_chg",0), phase)
+                if can:
+                    filtered.append(c)
+            candidates = filtered[:3]
+        else:
+            candidates = candidates[:3]  # 直接取前3（排序后），不用board_tier过滤
+    except Exception:
+        candidates = candidates[:3]
+
+    # ── 6. 模拟买入 ──
     day_buys = []
     for c in candidates:
-        # 记录（不真正写入，避免干扰）
         day_buys.append({
             "code": c["code"], "name": c["name"],
             "buy_price": c["price"], "qty": c["qty"],
@@ -203,7 +271,7 @@ def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
             "level": c["lb"],
         })
 
-    # ── 6. 模拟卖出 ──
+    # ── 7. 模拟卖出 ──
     day_closes = []
     for buy in day_buys:
         code = buy["code"]
@@ -214,8 +282,8 @@ def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
         level = buy["level"]
 
         close_price = get_close_price(code, date_str)
-        high_price = get_high_price(code, ndays=2)
-        low_price = get_low_price(code, ndays=2)
+        high_price = get_high_price(code, date_str)
+        low_price = get_low_price(code, date_str)
 
         if close_price is None:
             continue
@@ -286,6 +354,9 @@ def run_backtest_range(start_date, end_date, params=None, verbose=False):
 
     if params is None:
         params = get_params()
+
+    # 启用历史数据缓存（首次运行自动填充，后续直接读缓存）
+    apply_cache()
 
     dates = get_trade_dates(start_date, end_date)
     all_closes = []

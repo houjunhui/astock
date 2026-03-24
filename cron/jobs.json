@@ -150,7 +150,7 @@
       "name": "狗仔·资讯推送（00:00）",
       "enabled": true,
       "createdAtMs": 1774282863404,
-      "updatedAtMs": 1774282863404,
+      "updatedAtMs": 1774368240043,
       "schedule": {
         "expr": "0 0 * * 1-5",
         "kind": "cron",
@@ -169,7 +169,14 @@
         "to": "ou_12d595ebce7c7b73e926034c562b59d0"
       },
       "state": {
-        "nextRunAtMs": 1774368000000
+        "nextRunAtMs": 1774454400000,
+        "lastRunAtMs": 1774368000005,
+        "lastRunStatus": "error",
+        "lastStatus": "error",
+        "lastDurationMs": 240038,
+        "lastError": "cron: job execution timed out",
+        "lastDeliveryStatus": "unknown",
+        "consecutiveErrors": 1
       }
     },
     {
