@@ -13,6 +13,8 @@ from datetime import datetime, date, timedelta
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from astock.strategy_params import get_params
+from astock.cache_manager import apply_cache
+apply_cache()  # 缓存优先
 from astock.quicktiny import get_ladder, get_auction_for_codes, get_market_overview_fixed, get_minute
 from astock.position import (
     init_files, add_position, load_portfolio,
@@ -26,6 +28,8 @@ try:
     from astock.pools.kelly_position import allocate_positions, PHASE_CAP as KELLY_PHASE_CAP
     from astock.pools.board_tier import can_open_position as board_tier_check, get_board_tier
     from astock.risk_control import check_circuit_breaker
+    from astock.pools.emotion_adaptive import calc_emotion_adaptive
+    from astock.pools.dynamic_position import rebalance_portfolio
     NEW_MODULES_OK = True
 except Exception as e:
     NEW_MODULES_OK = False
@@ -42,43 +46,12 @@ PHASE_POSITIONS = {
 }
 
 def get_market_phase(date_str):
-    """情绪周期判断（带超时保护）"""
+    """情绪周期判断（使用自适应评分）"""
     try:
-        import signal
-        class TimeoutError(Exception):
-            pass
-        def _handler(sig, frame):
-            raise TimeoutError()
-        old_h = signal.signal(signal.SIGALRM, _handler)
-        signal.alarm(5)
-        try:
-            mo = get_market_overview_fixed(date_str)
-        except TimeoutError:
-            mo = {}
-        finally:
-            signal.alarm(0)
-            signal.signal(signal.SIGALRM, old_h)
-        temp = mo.get("market_temperature", 50)
-        zt = mo.get("zt_count", 0)
-        dt = mo.get("dt_count", 0)
-        broken = mo.get("broken_rate", 0)  # 炸板率百分比
-
-        # 主升：温度高 + 涨停多 + 炸板率低
-        if temp >= 80 and zt >= 30 and broken < 20:
-            return "主升", temp
-        # 发酵：温度高但炸板率上升
-        elif temp >= 60:
-            return "发酵", temp
-        # 分歧：涨停少、炸板率高
-        elif broken >= 35 or zt < 15:
-            return "退潮", temp
-        # 冰点：几乎无涨停
-        elif zt <= 5 or temp < 10:
-            return "冰点", temp
-        else:
-            return "分歧", temp
+        score, phase, details = calc_emotion_adaptive(date_str)
+        return phase, score
     except Exception:
-        return "主升", 50
+        return "分歧", 50
 
 
 def prev_trading_day(date_str):
@@ -282,6 +255,17 @@ def auto_buy(date_str):
     # ── 3. 仓位上限（已有）──
     existing = load_portfolio()
     existing_codes = {p["code"] for p in existing}
+
+    # ── 动态仓位检视（持仓期内调整）──
+    if NEW_MODULES_OK:
+        try:
+            adjustments = rebalance_portfolio()
+            if adjustments:
+                print(f"【仓位调整】{len(adjustments)}只持仓需调整")
+                for adj in adjustments:
+                    print(f"  {adj['action']} {adj['name']}: {adj['old_capital_pct']*100:.0f}%→{adj['new_capital_pct']*100:.0f}% | {adj['reason']}")
+        except Exception:
+            pass
 
     # ── 4. 构建候选列表 ──
     candidates = []

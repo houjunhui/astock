@@ -76,6 +76,14 @@ def get_low_price(code, date_str):
 def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
     # 延迟导入quicktiny，确保apply_cache()的缓存包装先生效
     from astock.quicktiny import get_ladder, get_auction_for_codes, get_kline_hist
+
+    # 确保新模块的缓存优先
+    try:
+        from astock.pools.emotion_adaptive import calc_emotion_adaptive
+        emotion_score, phase, _ = calc_emotion_adaptive(yday)
+        temp = emotion_score
+    except Exception:
+        pass  # 保持原有逻辑
     """
     模拟单日交易
     
@@ -94,6 +102,9 @@ def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
     """
     if params is None:
         params = get_params()
+
+    # ── 1板开关（v2：默认关闭）──
+    enable_1board = params.get("enable_1board", False)
 
     init_db()
     db = get_db()
@@ -176,6 +187,8 @@ def simulate_day(date_str, params=None, capital=CAPITAL, verbose=True):
             continue
 
         lb = yd.get("level", 1)
+        if lb == 1 and not enable_1board:
+            continue  # 1板暂停，跳过
 
         # ── 1板严格过滤（修复：亏钱主因）──
         if lb == 1:

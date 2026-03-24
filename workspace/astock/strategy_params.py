@@ -24,6 +24,49 @@ from datetime import datetime
 PARAMS_FILE = os.path.join(os.path.dirname(__file__), "position", "strategy_params.json")
 
 DEFAULT_PARAMS = {
+    # ── v2 新增：2板+专注策略 ──────────────────────────────
+    # 暂停1板（亏钱主力）
+    "enable_1board": False,   # True=开启1板，False=暂停1板
+
+    # ── v2 新增：晋级/续涨率校准 ─────────────────────────
+    "upgrade_rate_calibration": {
+        "C": 0.0,    # C级不晋级
+        "B": 0.30,   # B级晋级率30%
+        "A": 0.50,   # A级晋级率50%
+        "S": 1.00,   # S级晋级率100%
+    },
+    "continue_rate_override": {   # 续涨率（主要盈利来源）
+        "C": 0.0,
+        "B": 0.50,   # B级50%续涨
+        "A": 0.58,   # A级58%续涨
+        "S": 0.64,   # S级64%续涨
+    },
+
+    # ── v2 新增：IC验证框架 ───────────────────────────────
+    "ic_verification": {
+        "enabled": True,
+        "min_ic": 0.02,        # 因子最小IC阈值
+        "lookback_days": 60,    # IC计算窗口
+    },
+
+    # ── v2 新增：动态仓位管理 ─────────────────────────────
+    "dynamic_position": {
+        "enabled": True,
+        "profit_scale_factor": 0.5,   # 浮盈/浮亏时仓位缩放因子
+        "holding_night_bonus": 0.05,  # 持仓过夜额外奖励仓位
+        "max_holding_days": 3,        # 最长持仓天数
+    },
+
+    # ── v2 新增：情绪自适应 ────────────────────────────────
+    "emotion_adaptive": {
+        "enabled": True,
+        "index_weight": 0.25,        # 指数权重（涨跌）
+        "zt_count_weight": 0.30,     # 涨停家数权重
+        "limit_down_weight": 0.15,    # 跌停家数权重
+        "broken_rate_weight": 0.15,   # 炸板率权重
+        "phase_history_weight": 0.15,  # 历史相位权重
+    },
+
     # 仓位
     "position_S": 0.30,   # S/3板+
     "position_A": 0.20,   # A/2板

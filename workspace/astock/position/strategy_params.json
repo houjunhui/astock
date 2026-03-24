@@ -1,5 +1,5 @@
 {
-  "current_version": "v3",
+  "current_version": "v5",
   "versions": {
     "v1": {
       "created": "20260324",
@@ -169,6 +169,85 @@
       },
       "stats": {},
       "rollback_count": 1
+    },
+    "v5": {
+      "created": "20260325",
+      "author": "v2_upgrade",
+      "params": {
+        "position_S": 0.3,
+        "position_A": 0.2,
+        "position_B": 0.15,
+        "max_total_main_sheng": 0.7,
+        "max_total_recession": 0.2,
+        "max_positions_per_day": 3,
+        "target_3board_plus": 1.12,
+        "target_2board": 1.09,
+        "target_1board": 1.07,
+        "stop_loss_default": 0.04,
+        "breakeven_threshold": 0.05,
+        "lock_profit_threshold": 0.1,
+        "trailing_profit_pct": 0.4,
+        "trailing_profit_min": 6,
+        "reduce_threshold": 0.02,
+        "close_threshold": 0.05,
+        "broken_limit_dragon": 0.06,
+        "broken_limit_normal": 0.04,
+        "auction_amount_min": 50000000,
+        "vol_ratio_min": 3.0,
+        "turnover_min": 1.0,
+        "auction_chg_max": 0.05,
+        "s_level_min_boards": 4,
+        "s_level_min_seal_rate": 0.85,
+        "s_level_min_turnover": 2.0,
+        "s_level_min_vr": 5.0,
+        "consecutive_loss_stop": 2,
+        "week_drawdown_stop": 50000,
+        "profit_protect_10": 0.5,
+        "profit_protect_20": 0.3,
+        "kelly_win_rate_S": 0.4,
+        "kelly_win_rate_A": 0.3,
+        "kelly_win_rate_B": 0.2,
+        "kelly_avg_win_pct": 9.0,
+        "kelly_avg_loss_pct": 4.0,
+        "risk_per_stock": 0.01,
+        "kelly_max_fraction": 0.5,
+        "emotion_weight_lb": 0.2,
+        "emotion_weight_ratio": 0.2,
+        "emotion_weight_broken": 0.15,
+        "emotion_weight_yesterday": 0.15,
+        "emotion_weight_sector": 0.1,
+        "emotion_weight_rise": 0.1,
+        "emotion_weight_fall": 0.05,
+        "emotion_weight_index": 0.05,
+        "enable_1board": false,
+        "upgrade_rate_calibration": {
+          "C": 0.0,
+          "B": 0.3,
+          "A": 0.5,
+          "S": 1.0
+        },
+        "ic_verification": {
+          "enabled": true,
+          "min_ic": 0.02,
+          "lookback_days": 60
+        },
+        "dynamic_position": {
+          "enabled": true,
+          "profit_scale_factor": 0.5,
+          "holding_night_bonus": 0.05,
+          "max_holding_days": 3
+        },
+        "emotion_adaptive": {
+          "enabled": true,
+          "index_weight": 0.25,
+          "zt_count_weight": 0.3,
+          "limit_down_weight": 0.15,
+          "broken_rate_weight": 0.15,
+          "phase_history_weight": 0.15
+        }
+      },
+      "stats": {},
+      "rollback_count": 0
     }
   },
   "test_version": "v2",
