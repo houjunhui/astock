@@ -1,0 +1,23 @@
+# Environment (contains API keys)
+.env
+.env.local
+*.env
+
+# Cache (large, regenerated automatically)
+astock/cache/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
