@@ -120,14 +120,24 @@ def calc_stop_loss(buy_price, method="fixed", param=None):
     return round(buy_price * 0.96, 2)
 
 
-def calc_target(buy_price, method="fixed", param=None):
+def calc_target(buy_price, method="fixed", param=None, phase=None):
     """
-    计算目标价
+    计算目标价（支持分阶段调整）
+    phase: 主升/发酵/分歧/退潮/冰点
+      主升→目标上浮5%（避免卖飞）
+      退潮→目标下调3%（及时止盈）
+      冰点→目标下调10%
     """
     if not buy_price or buy_price <= 0:
         return 0.0
     if method == "fixed":
         pct = param if param is not None else 0.09
+        if phase == "主升":
+            pct = pct * 1.05
+        elif phase == "退潮":
+            pct = pct * 0.97
+        elif phase == "冰点":
+            pct = pct * 0.90
         return round(buy_price * (1 + pct), 2)
     return round(buy_price * 1.10, 2)
 

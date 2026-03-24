@@ -179,6 +179,7 @@ def load_safety_margin():
         "total_extracted": 0.0,   # 历史累计提取总额
         "balance": 0.0,           # 当前安全垫余额
         "records": [],             # 提取记录
+        "equity_floor": 1_000_000 * 0.70,  # 资金地板：总资产的30%永远保留
     }
 
 

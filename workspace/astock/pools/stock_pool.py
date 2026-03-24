@@ -16,6 +16,15 @@ from pathlib import Path
 POOL_DIR = Path("/home/gem/workspace/agent/workspace/astock/pools")
 POOL_DIR.mkdir(parents=True, exist_ok=True)
 BLACKLIST_FILE = POOL_DIR / "blacklist.json"
+
+# 黑名单纳入标准（明确化）
+BLACKLIST_CRITERIA = {
+    "财务造假": ["业绩造假", "财务报告虚假", "审计拒绝表示意见"],
+    "监管处罚": ["操纵股价", "内幕交易", "信息披露违规", "自律监管"],
+    "暴雷": ["债务违约", "银行账户冻结", "主要资产查封", "供应商维权"],
+    "基本面恶化": ["连续2年亏损", "主营收入萎缩>80%", "核心资产剥离"],
+    "交易异常": ["连续跌停", "闪崩", "集中抛售"],
+}
 POOL_FILE = POOL_DIR / "pool_{date}.json"
 
 
