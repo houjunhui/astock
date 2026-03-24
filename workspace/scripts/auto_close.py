@@ -101,11 +101,11 @@ def append_daily_pnl(date_str, closed):
                 "date": date_str,
                 "code": c["code"],
                 "name": c["name"],
-                "buy_price": c["buy_price"],
-                "close_price": c["close_price"],
-                "qty": c["qty"],
-                "pnl_pct": c["pnl_pct"],
-                "pnl_amt": c["pnl_amt"],
+                "buy_price": str(c.get("buy_price", "")),
+                "close_price": str(c.get("close_price", "")),
+                "qty": str(c.get("qty", "")),
+                "pnl_pct": str(c.get("pnl_pct", "0")),
+                "pnl_amt": str(c.get("pnl_amt", "0.0")),
                 "buy_method": c.get("buy_method", ""),
                 "reason": "收盘平仓",
             })
@@ -127,7 +127,7 @@ def format_report(closed, date_str, capital=CAPITAL):
         total_pnl = 0
         total_pct = 0
     else:
-        total_pnl = sum(c["pnl_amt"] for c in closed)
+        total_pnl = sum(float(c["pnl_amt"]) for c in closed)
         total_pct = total_pnl / capital * 100
 
         lines.append(f"交易笔数: {len(closed)}笔")
@@ -136,11 +136,11 @@ def format_report(closed, date_str, capital=CAPITAL):
         lines.append("")
         lines.append("【逐笔明细】")
         for i, c in enumerate(closed, 1):
-            emoji = "✅" if c["pnl_amt"] >= 0 else "❌"
+            emoji = "✅" if float(c["pnl_amt"]) >= 0 else "❌"
             lines.append(
                 f"{emoji} {i} {c['name']}({c['code']}) "
                 f"{c['buy_price']}→{c['close_price']} "
-                f"{c['pnl_pct']:+.2f}% ({c['pnl_amt']:+,.0f}元)"
+                f"{float(c['pnl_pct']):+.2f}% ({float(c['pnl_amt']):+,.0f}元)"
             )
 
     lines.append("")

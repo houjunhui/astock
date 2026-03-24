@@ -109,8 +109,10 @@ def calc_stop_loss(buy_price, method="fixed", param=None):
     - atr: ATR倍数
     - recent_low: 近N日最低点
     """
+    if not buy_price or buy_price <= 0:
+        return 0.0
     if method == "fixed":
-        pct = param or 0.03
+        pct = param if param is not None else 0.03
         return round(buy_price * (1 - pct), 2)
     elif method == "recent_low":
         # 近N日最低点（需要kline数据，这里简化）
@@ -122,8 +124,10 @@ def calc_target(buy_price, method="fixed", param=None):
     """
     计算目标价
     """
+    if not buy_price or buy_price <= 0:
+        return 0.0
     if method == "fixed":
-        pct = param or 0.10  # 默认+10%目标（涨停附近）
+        pct = param if param is not None else 0.10
         return round(buy_price * (1 + pct), 2)
     return round(buy_price * 1.10, 2)
 

@@ -62,9 +62,11 @@ def auto_buy(date_str):
     today_str = date_str.replace("-", "")
     yday_str = prev_trading_day(today_str)
 
-    # 1. 获取昨日ladder
+    # 1. 获取昨日ladder（非交易日返回None）
     ladder_y = get_ladder(yday_str)
     y_stocks = {}
+    if not ladder_y or not ladder_y.get("boards"):
+        return [], phase, temp, today_str  # 无昨日数据，直接跳过
     for b in ladder_y.get("boards", []):
         for s in b.get("stocks", []):
             y_stocks[s["code"]] = {
@@ -96,6 +98,8 @@ def auto_buy(date_str):
 
         if chg <= 0:
             continue  # 竞价低开/平，跳过
+        if not price or price <= 0:
+            continue  # 价格异常，跳过
 
         # 已在仓，跳过
         if code in existing_codes:
@@ -157,6 +161,8 @@ def auto_buy(date_str):
         if suggest_pct < 0.05:
             continue  # 剩余资金不足5%
 
+        if not buy_price or buy_price <= 0:
+            continue
         suggest_amount = int(CAPITAL * suggest_pct / 100) * 100
         qty = int(suggest_amount / buy_price / 100) * 100
         lot_size = qty // 100

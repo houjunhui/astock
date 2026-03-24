@@ -58,14 +58,14 @@ def check_position(pos):
     high = get_intraday_high(code)
     peak = get_intraday_peak(code)  # 当日最高（用于回撤计算）
 
-    if cur is None:
+    if cur is None or cur <= 0:
         return None
 
     pnl_pct = (cur - buy_price) / buy_price * 100
     pnl_amt = (cur - buy_price) * qty
 
     # ── 1. 止损 ──
-    if low is not None and low <= stop_loss:
+    if low is not None and stop_loss > 0 and low <= stop_loss:
         return {
             "action": "stop_loss",
             "reason": f"触及止损({low}<={stop_loss})",
@@ -73,7 +73,7 @@ def check_position(pos):
         }
 
     # ── 2. 目标价止盈 ──
-    if high is not None and high >= target:
+    if high is not None and target > 0 and high >= target:
         return {
             "action": "target_hit",
             "reason": f"触及目标价({high}>={target})",
@@ -82,7 +82,7 @@ def check_position(pos):
 
     # ── 3. 动态止盈（从当日高点回撤≥50% 且 浮盈≥5%）──
     # 逻辑：从最高点回落50%时卖出（如最高7.58，回落到7.24走）
-    if peak is not None and peak > buy_price:
+    if peak is not None and peak > 0 and peak > buy_price:
         drawdown_pct = (peak - cur) / peak * 100
         profit_pct = (peak - buy_price) / buy_price * 100
         if drawdown_pct >= 50 and profit_pct >= 5:
