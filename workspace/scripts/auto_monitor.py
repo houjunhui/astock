@@ -187,6 +187,9 @@ def check_position(pos):
 def monitor():
     """监控所有持仓，返回操作记录（含T+1+超期+自动重试）"""
     init_files()
+    closed = []
+    reduced = []
+    alerts = []
     # 自动重试加载持仓
     positions = None
     for _ in range(3):

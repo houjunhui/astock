@@ -554,3 +554,196 @@ def get_market_overview_fixed(date):
     if not d or "data" not in d:
         return {}
     return d["data"]
+
+
+# ═══════════════════════════════════════════════════════════
+# 新增接口（来自官方文档，2026-03-25 接入）
+# ═══════════════════════════════════════════════════════════
+
+def get_search(query, limit=20):
+    """
+    股票搜索。
+    按名称、代码、行业、拼音搜索。
+    返回: [{ts_code, symbol, name, area, industry, market, list_status, list_date}, ...]
+    """
+    d = _get("search", {"query": query, "limit": limit})
+    if not d or "data" not in d:
+        return []
+    data = d["data"]
+    if isinstance(data, list):
+        return data
+    return data.get("items", [])
+
+
+def get_hot_sectors(date):
+    """
+    最强风口。返回当日涨停集中板块 + AI分析。
+    date: YYYYMMDD 或 YYYY-MM-DD
+    返回: [{code, name, changePercent, limitUpNum, continuousPlateNum,
+            highBoard, days, stocks: [{code, name, changePercent, continueNum,
+            highDays, reasonType, reasonInfo, changeTag, isSt, isNew}, ...]}, ...]
+    """
+    date_str = str(date).replace("-", "")
+    d = _get("hot-sectors", {"date": date_str})
+    if not d or "data" not in d:
+        return []
+    raw = d["data"]
+    if isinstance(raw, list):
+        return raw
+    return raw.get("items", raw.get("sectors", []))
+
+
+def get_limit_events(event_type="limit_up", limit=100):
+    """
+    封板/炸板事件流（实时）。
+    event_type: limit_up / limit_down
+    返回: [{code, name, type, orderVolume, orderAmount, turnover, time}, ...]
+    """
+    d = _get("limit-events", {"type": event_type, "limit": limit})
+    if not d or "data" not in d:
+        return []
+    data = d["data"]
+    if isinstance(data, dict):
+        return data.get("events", [])
+    if isinstance(data, list):
+        return data
+    return []
+
+
+def get_approaching_limit_up(date):
+    """
+    冲刺涨停（即将涨停但未封）。
+    date: YYYYMMDD 或 YYYY-MM-DD
+    返回: [{code, name, changePercent, price, volumeRatio, ...}, ...]
+    """
+    date_str = str(date).replace("-", "")
+    d = _get("approaching-limit-up", {"date": date_str})
+    if not d or "data" not in d:
+        return []
+    raw = d["data"]
+    if isinstance(raw, list):
+        return raw
+    return raw.get("items", [])
+
+
+def get_anomalies(date=None, code=None):
+    """
+    异动检测。
+    date: YYYYMMDD（可选，不传则最新）
+    code: 股票代码（可选）
+    至少传一个参数。
+    返回: [{code, name, type, changeRate, volumeChangeRate, time, ...}, ...]
+    """
+    params = {}
+    if date:
+        params["date"] = str(date).replace("-", "")
+    if code:
+        params["code"] = code
+    if not params:
+        return []
+    d = _get("anomalies", params)
+    if not d or "data" not in d:
+        return []
+    raw = d["data"]
+    if isinstance(raw, list):
+        return raw
+    return raw.get("items", raw.get("anomalies", []))
+
+
+def get_briefings(date=None, btype="morning"):
+    """
+    每日简报（AI生成）。
+    btype: morning / midday / closing / evening
+    date: YYYYMMDD（可选，不传则最新）
+    返回: [{date, type, title, summary, content, ...}, ...]
+    """
+    params = {"type": btype}
+    if date:
+        params["date"] = str(date).replace("-", "")
+    d = _get("briefings", params)
+    if not d or "data" not in d:
+        return []
+    raw = d["data"]
+    if isinstance(raw, list):
+        return raw
+    return [raw] if raw else []
+
+
+def get_correlation(code):
+    """
+    股票关联（同概念股）。
+    code: 6位股票代码
+    返回: [{code, name, correlation, sharedConcepts, ...}, ...]
+    """
+    d = _get(f"correlation/{code}", {})
+    if not d or "data" not in d:
+        return []
+    raw = d["data"]
+    if isinstance(raw, list):
+        return raw
+    return raw.get("items", [raw])
+
+
+def get_concept_stocks(ts_code, date=None):
+    """
+    概念成分股。
+    ts_code: 概念代码，如 885760.TI
+    date: YYYYMMDD（可选）
+    返回: [{code, name, changePercent, ...}, ...]
+    """
+    params = {"tsCode": ts_code}
+    if date:
+        params["date"] = str(date).replace("-", "")
+    d = _get(f"concepts/{ts_code}/stocks", params)
+    if not d or "data" not in d:
+        return []
+    raw = d["data"]
+    if isinstance(raw, list):
+        return raw
+    return raw.get("items", [])
+
+
+def get_capital_flow_v2(flow_type="stock", stock_code=None, sector_type=None, date=None, limit=30):
+    """
+    资金流向（增强版）。
+    flow_type: market / stock / sector / hsgt
+    返回: {flowType, count, data: [{date, value, direction?}, ...]}
+    """
+    params = {"flowType": flow_type, "limit": limit}
+    if stock_code:
+        params["stockCode"] = stock_code
+    if sector_type:
+        params["sectorType"] = sector_type
+    if date:
+        params["date"] = str(date).replace("-", "")
+    d = _get("capital-flow", params)
+    if not d or "data" not in d:
+        return {}
+    return d["data"]
+
+
+def get_dragon_tiger(date=None, stock_code=None, stock_name=None, page=1, page_size=20):
+    """
+    龙虎榜（营业部席位买卖详情）。
+    date: YYYY-MM-DD（必填）
+    stock_code: 股票代码（可选，精确到某只股票）
+    stock_name: 股票名称（可选）
+    page/page_size: 分页（最大 page_size=100）
+    返回（list）: [{date, stockCode, stockName, reason, close, chgPct,
+                    volume, amount, netBuy, totalBuy, totalSell,
+                    buyBranches: [{name, buyAmt, sellAmt, netAmt}, ...],
+                    sellBranches: [{name, buyAmt, sellAmt, netAmt}, ...],
+                    limitUpInfo: {...}}, ...]
+    """
+    params = {"page": page, "pageSize": page_size}
+    if date:
+        params["date"] = str(date)  # YYYY-MM-DD
+    if stock_code:
+        params["stockCode"] = stock_code
+    if stock_name:
+        params["stockName"] = stock_name
+    d = _get("dragon-tiger", params)
+    if not d or "data" not in d:
+        return []
+    raw = d["data"]
+    return raw if isinstance(raw, list) else []

@@ -6,7 +6,7 @@ auto_close.py - 收盘自动平仓 + 盈亏报告（增强版）
 - 生成每日盈亏报告
 """
 import sys, os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from astock.position import (
@@ -31,6 +31,8 @@ def auto_close(date_str):
         yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
         if risk_tag in ("extreme", "high") and buy_date == yesterday:
             # 昨日高风险仓：次日开盘前强制平仓
+            code = pos["code"]
+            name = pos["name"]
             cur = float(pos.get("current_price", 0)) or float(pos["buy_price"])
             close_price = round(cur * 0.995, 2)
             reason = f"高风险仓强制平仓({risk_tag})"
